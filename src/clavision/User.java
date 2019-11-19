@@ -1,6 +1,8 @@
 package clavision;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
   private String userId;
   private byte[] accessTokenHash;
   private String lineId;
