@@ -1,7 +1,5 @@
 package clavision;
 
-import clavision.User;
-
 public class UserDAO {
   private static User sampleUser =
       new User("sampleUserId", new byte[256 / 8], "sampleUserLineId", "Sample User");
@@ -10,7 +8,7 @@ public class UserDAO {
     return sampleUser;
   }
 
-  public static User getByUserId(String userId) {
+  public static User getByLineId(String userId) {
     return sampleUser;
   }
 
