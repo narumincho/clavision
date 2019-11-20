@@ -1,30 +1,56 @@
 package clavision;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class UserDAO {
   private static User sampleUser =
       new User("sampleUserId", new byte[256 / 8], "sampleUserLineId", "Sample User");
+  private static final String tableName = "user";
+  private static final String userIdLabel = "user_id";
+  private static final String accessTokenHashLabel = "access_token_hash";
+  private static final String lineIdLabel = "line_id";
+  private static final String userNameInLineLabel = "user_name_in_line";
+
+  static void createTable() {
+//    System.out.println("ok...");
+        Connection connection = DatabaseAccess.getConnection();
+
+    //    try {
+    //      final Statement statement = connection.createStatement();
+    //      statement.executeUpdate("select * from \"user\"");
+    //      statement.executeUpdate(
+    //          "create table \""
+    //              + tableName
+    //              + "\" ("
+    //              + userIdLabel
+    //              + " uuid, "
+    //              + accessTokenHashLabel
+    //              + " bit(256), "
+    //              + lineIdLabel
+    //              + " text,"
+    //              + userNameInLineLabel
+    //              + " text)");
+    //    } catch (SQLException e) {
+    //      e.printStackTrace();
+    //    }
+  }
 
   static User getByAccessTokenHash(byte[] accessTokenHash) {
     Connection connection = DatabaseAccess.getConnection();
     try {
-      PreparedStatement preparedStatement =
+      final PreparedStatement preparedStatement =
           connection.prepareStatement("select * from user where accessTokenHash=?");
       preparedStatement.setBytes(0, accessTokenHash);
-      ResultSet resultSet = preparedStatement.executeQuery();
+      final ResultSet resultSet = preparedStatement.executeQuery();
       if (!resultSet.next()) {
         throw new Error("accessToken is invalid");
       }
-      ;
+
       return new User(
-          resultSet.getString("user_id"),
-          resultSet.getBytes("access_token_hash"),
-          resultSet.getString("line_id"),
-          resultSet.getString("user_name_in_line"));
+          resultSet.getString(userIdLabel),
+          resultSet.getBytes(accessTokenHashLabel),
+          resultSet.getString(lineIdLabel),
+          resultSet.getString(userNameInLineLabel));
 
     } catch (SQLException e) {
       e.printStackTrace();

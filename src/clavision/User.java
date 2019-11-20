@@ -2,6 +2,7 @@ package clavision;
 
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class User implements Serializable {
   private String userId;
   private byte[] accessTokenHash;
