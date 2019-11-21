@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.Arrays;
+import java.util.Random;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -24,22 +25,24 @@ public class Index extends HttpServlet {
 
   public static void main(String[] args) {
     System.out.println("データベースの操作サンプル");
-//    UserManager.initial();
+    //    UserManager.initial();
     try {
       System.out.println(Class.forName("org.postgresql.Driver"));
       Connection connection = DatabaseAccess.getConnection();
       final PreparedStatement preparedStatement =
           connection.prepareStatement("insert into \"user\" values(?, ?, ?, ?)");
       preparedStatement.setObject(1, java.util.UUID.randomUUID());
-      byte[] bytes = MessageDigest.getInstance("SHA-256").digest("sorena".getBytes());
-      System.out.println(Arrays.toString(bytes));
-      preparedStatement.setBytes(2, bytes);
+      Random random = new Random();
+      byte[] sampleAccessToken = new byte[32];
+      random.nextBytes(sampleAccessToken);
+      preparedStatement.setBytes(2, MessageDigest.getInstance("SHA-256").digest(sampleAccessToken));
       preparedStatement.setString(3, "lineのID");
       preparedStatement.setString(4, "lineの名前");
       preparedStatement.execute();
 
       final Statement statement = connection.createStatement();
       final ResultSet resultSet = statement.executeQuery("select * from \"user\"");
+      System.out.println("=====================================");
       while (resultSet.next()) {
         System.out.println(resultSet.getObject(1));
         System.out.println(Arrays.toString(resultSet.getBytes(2)));

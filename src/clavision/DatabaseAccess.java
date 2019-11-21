@@ -4,10 +4,10 @@ import java.sql.SQLException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-public class DatabaseAccess {
+class DatabaseAccess {
   private static final String dbName = "tutorial";
   private static final String sqlHostname = "localhost";
-  static final String url = "jdbc:postgresql://" + sqlHostname + "/" + dbName;
+  private static final String url = "jdbc:postgresql://" + sqlHostname + "/" + dbName;
   private static Connection connection;
 
   static Connection getConnection() {

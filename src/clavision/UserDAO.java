@@ -1,15 +1,11 @@
 package clavision;
 
 import java.sql.*;
+import java.util.UUID;
 
 public class UserDAO {
   private static User sampleUser =
-      new User("sampleUserId", new byte[256 / 8], "sampleUserLineId", "Sample User");
-  private static final String tableName = "user";
-  private static final String userIdLabel = "user_id";
-  private static final String accessTokenHashLabel = "access_token_hash";
-  private static final String lineIdLabel = "line_id";
-  private static final String userNameInLineLabel = "user_name_in_line";
+      new User(UUID.randomUUID(), new byte[256 / 8], "sampleUserLineId", "Sample User");
 
   static void createTable() {
     Connection connection = DatabaseAccess.getConnection();

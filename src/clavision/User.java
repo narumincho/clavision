@@ -1,22 +1,23 @@
 package clavision;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 @SuppressWarnings("serial")
 public class User implements Serializable {
-  private String userId;
+  private UUID userId;
   private byte[] accessTokenHash;
   private String lineId;
   private String userNameInLine;
 
-  public User(String userId, byte[] accessTokenHash, String lineId, String userNameInLine) {
+  public User(UUID userId, byte[] accessTokenHash, String lineId, String userNameInLine) {
     this.userId = userId;
     this.accessTokenHash = accessTokenHash;
     this.lineId = lineId;
     this.userNameInLine = userNameInLine;
   }
 
-  public final String getUserId() {
+  public final UUID getUserId() {
     return userId;
   }
 
