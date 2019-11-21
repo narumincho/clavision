@@ -11,51 +11,44 @@ public class UserDAO {
   private static final String lineIdLabel = "line_id";
   private static final String userNameInLineLabel = "user_name_in_line";
 
-  void createTable() {
-//    System.out.println("ok...");
-        Connection connection = (new DatabaseAccess()).getConnection();
-
-    //    try {
-    //      final Statement statement = connection.createStatement();
-    //      statement.executeUpdate("select * from \"user\"");
-    //      statement.executeUpdate(
-    //          "create table \""
-    //              + tableName
-    //              + "\" ("
-    //              + userIdLabel
-    //              + " uuid, "
-    //              + accessTokenHashLabel
-    //              + " bit(256), "
-    //              + lineIdLabel
-    //              + " text,"
-    //              + userNameInLineLabel
-    //              + " text)");
-    //    } catch (SQLException e) {
-    //      e.printStackTrace();
-    //    }
+  static void createTable() {
+    Connection connection = DatabaseAccess.getConnection();
+    try {
+      final Statement statement = connection.createStatement();
+      statement.executeUpdate(
+          "create table \"user\" (\n"
+              + "    user_id uuid primary key\n"
+              + "    ,access_token_hash bytea not null unique check (length(access_token_hash) = 32)\n"
+              + "    ,line_id text not null\n"
+              + "    ,user_name_in_line text not null\n"
+              + ")");
+      System.out.println("create user table");
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
 
   static User getByAccessTokenHash(byte[] accessTokenHash) {
-//    Connection connection = DatabaseAccess.getConnection();
-//    try {
-//      final PreparedStatement preparedStatement =
-//          connection.prepareStatement("select * from user where accessTokenHash=?");
-//      preparedStatement.setBytes(0, accessTokenHash);
-//      final ResultSet resultSet = preparedStatement.executeQuery();
-//      if (!resultSet.next()) {
-//        throw new Error("accessToken is invalid");
-//      }
-//
-//      return new User(
-//          resultSet.getString(userIdLabel),
-//          resultSet.getBytes(accessTokenHashLabel),
-//          resultSet.getString(lineIdLabel),
-//          resultSet.getString(userNameInLineLabel));
-//
-//    } catch (SQLException e) {
-//      e.printStackTrace();
-//    }
-//
+    //    Connection connection = DatabaseAccess.getConnection();
+    //    try {
+    //      final PreparedStatement preparedStatement =
+    //          connection.prepareStatement("select * from user where accessTokenHash=?");
+    //      preparedStatement.setBytes(0, accessTokenHash);
+    //      final ResultSet resultSet = preparedStatement.executeQuery();
+    //      if (!resultSet.next()) {
+    //        throw new Error("accessToken is invalid");
+    //      }
+    //
+    //      return new User(
+    //          resultSet.getString(userIdLabel),
+    //          resultSet.getBytes(accessTokenHashLabel),
+    //          resultSet.getString(lineIdLabel),
+    //          resultSet.getString(userNameInLineLabel));
+    //
+    //    } catch (SQLException e) {
+    //      e.printStackTrace();
+    //    }
+    //
     return sampleUser;
   }
 
