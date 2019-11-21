@@ -4,8 +4,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class UserManager {
-    static public void initial() {
-        UserDAO.createTable();
+    void initial() {
+        (new UserDAO()).createTable();
     }
 
     static public User logInWithAccessToken(String accessToken) {

@@ -11,9 +11,9 @@ public class UserDAO {
   private static final String lineIdLabel = "line_id";
   private static final String userNameInLineLabel = "user_name_in_line";
 
-  static void createTable() {
+  void createTable() {
 //    System.out.println("ok...");
-        Connection connection = DatabaseAccess.getConnection();
+        Connection connection = (new DatabaseAccess()).getConnection();
 
     //    try {
     //      final Statement statement = connection.createStatement();
@@ -36,26 +36,26 @@ public class UserDAO {
   }
 
   static User getByAccessTokenHash(byte[] accessTokenHash) {
-    Connection connection = DatabaseAccess.getConnection();
-    try {
-      final PreparedStatement preparedStatement =
-          connection.prepareStatement("select * from user where accessTokenHash=?");
-      preparedStatement.setBytes(0, accessTokenHash);
-      final ResultSet resultSet = preparedStatement.executeQuery();
-      if (!resultSet.next()) {
-        throw new Error("accessToken is invalid");
-      }
-
-      return new User(
-          resultSet.getString(userIdLabel),
-          resultSet.getBytes(accessTokenHashLabel),
-          resultSet.getString(lineIdLabel),
-          resultSet.getString(userNameInLineLabel));
-
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-
+//    Connection connection = DatabaseAccess.getConnection();
+//    try {
+//      final PreparedStatement preparedStatement =
+//          connection.prepareStatement("select * from user where accessTokenHash=?");
+//      preparedStatement.setBytes(0, accessTokenHash);
+//      final ResultSet resultSet = preparedStatement.executeQuery();
+//      if (!resultSet.next()) {
+//        throw new Error("accessToken is invalid");
+//      }
+//
+//      return new User(
+//          resultSet.getString(userIdLabel),
+//          resultSet.getBytes(accessTokenHashLabel),
+//          resultSet.getString(lineIdLabel),
+//          resultSet.getString(userNameInLineLabel));
+//
+//    } catch (SQLException e) {
+//      e.printStackTrace();
+//    }
+//
     return sampleUser;
   }
 

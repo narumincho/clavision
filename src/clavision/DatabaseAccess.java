@@ -7,15 +7,16 @@ import java.sql.DriverManager;
 public class DatabaseAccess {
   private static final String dbName = "tutorial";
   private static final String sqlHostname = "localhost";
-  private static final String url = "jdbc:postgresql://" + sqlHostname + "/" + dbName;
+  static final String url = "jdbc:postgresql://" + sqlHostname + "/" + dbName;
   private static Connection connection;
 
-  public static Connection getConnection() {
+  static Connection getConnection() {
     if (connection == null) {
       try {
         Class.forName("org.postgresql.Driver");
-        return DriverManager.getConnection(url, "postgres", Key.postgresPassword);
-      } catch (ClassNotFoundException | SQLException e) {
+        connection = DriverManager.getConnection(url, "postgres", Key.postgresPassword);
+        return connection;
+      } catch (SQLException | ClassNotFoundException e) {
         e.printStackTrace();
       }
     }
