@@ -25,9 +25,7 @@ public class Index extends HttpServlet {
 
   public static void main(String[] args) {
     System.out.println("データベースの操作サンプル");
-    //    UserManager.initial();
     try {
-      System.out.println(Class.forName("org.postgresql.Driver"));
       Connection connection = DatabaseAccess.getConnection();
       final PreparedStatement preparedStatement =
           connection.prepareStatement("insert into \"user\" values(?, ?, ?, ?)");
@@ -50,7 +48,7 @@ public class Index extends HttpServlet {
         System.out.println(resultSet.getString(4));
         System.out.println("=====================================");
       }
-    } catch (ClassNotFoundException | SQLException | NoSuchAlgorithmException e) {
+    } catch (SQLException | NoSuchAlgorithmException e) {
       e.printStackTrace();
     }
   }
