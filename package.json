@@ -1,0 +1,24 @@
+{
+  "name": "clavision",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/narumincho/clavision.git"
+  },
+  "author": "narumincho <narumincho.starfy@gmail.com> (https://narumincho.com)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/narumincho/clavision/issues"
+  },
+  "homepage": "https://github.com/narumincho/clavision#readme",
+  "devDependencies": {
+    "node-elm-compiler": "^5.0.4",
+    "parcel-bundler": "^1.12.4",
+    "typescript": "^3.7.4"
+  }
+}

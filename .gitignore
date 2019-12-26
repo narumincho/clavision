@@ -4,3 +4,6 @@ clavision.iml
 key.java
 .metadata
 .vscode
+node_modules
+elm-stuff
+.cache
