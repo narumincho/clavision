@@ -1,7 +1,5 @@
 package clavision;
 
-import org.jetbrains.annotations.NotNull;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -11,16 +9,6 @@ import java.io.IOException;
 
 @WebServlet("/api")
 public class Api extends HttpServlet {
-  private static final long serialVersionUID = 1L;
-
-  public Api() {
-    super();
-  }
-
-  public static  void main(String[] args) {
-    System.out.println("sorena");
-  }
-
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
