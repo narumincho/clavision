@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 
@@ -21,6 +20,8 @@ public class Api extends HttpServlet {
     switch (request.getPathInfo()) {
       case "/lineLogInUrl":
         getLineLogInUrl(response);
+        return;
+      case "/callback":
         return;
     }
     response
@@ -35,11 +36,9 @@ public class Api extends HttpServlet {
   private static void getLineLogInUrl(HttpServletResponse response) {
     try {
       URL url =
-          new URI(
-                  "https",
-                  "access.line.me",
-                  "/oauth2/v2.1/authorize",
-                  URLQueryStringFromMap(
+          new URL(
+              "https://access.line.me/oauth2/v2.1/authorize?"
+                  + URLQueryStringFromMap(
                       Map.of(
                           "response_type",
                           "code",
@@ -50,14 +49,10 @@ public class Api extends HttpServlet {
                           "scope",
                           "profile openid",
                           "state",
-                          "abcd")),
-                  "")
-              .toURL();
-      URLConnection urlConnection = url.openConnection();
-      Object content = urlConnection.getContent();
-      System.out.println(content);
-      response.getWriter().append(content.toString());
-    } catch (URISyntaxException | IOException e) {
+                          "abcd")));
+      response.setContentType("application/json");
+      response.getWriter().append("\"").append(url.toString()).append("\"");
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }

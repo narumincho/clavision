@@ -1,4 +1,8 @@
 import { Elm } from "./source/Main.elm";
-Elm.Main.init({
+const app = Elm.Main.init({
   flags: null
+});
+
+app.ports.jumpPage.subscribe(url => {
+  location.href = url;
 });

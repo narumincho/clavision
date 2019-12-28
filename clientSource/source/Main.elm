@@ -1,4 +1,4 @@
-module Main exposing (Model, Msg, init, subscriptions, update, view)
+port module Main exposing (Model, Msg, init, subscriptions, update, view)
 
 import Browser
 import Html
@@ -6,6 +6,9 @@ import Html.Events
 import Http
 import Json.Decode
 import Url
+
+
+port jumpPage : String -> Cmd msg
 
 
 main : Program () Model Msg
@@ -19,12 +22,12 @@ main =
 
 
 type Model
-    = Model { logInUrl : Maybe Url.Url }
+    = Model { result : Maybe (Result Http.Error Url.Url) }
 
 
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( Model { logInUrl = Nothing }, Cmd.none )
+    ( Model { result = Nothing }, Cmd.none )
 
 
 type Msg
@@ -41,10 +44,10 @@ update msg model =
         ResponseLineLogInUrl result ->
             case result of
                 Ok url ->
-                    ( Model { logInUrl = Just url }, Cmd.none )
+                    ( Model { result = Just result }, jumpPage (Url.toString url) )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( Model { result = Just result }, Cmd.none )
 
 
 urlDecoder : Json.Decode.Decoder Url.Url
@@ -67,7 +70,7 @@ subscriptions model =
 
 
 view : Model -> Browser.Document Msg
-view model =
+view (Model record) =
     { title = "Document Title"
     , body =
         [ Html.div []
@@ -76,4 +79,26 @@ view model =
                 [ Html.text "LINE でログイン" ]
             ]
         ]
+            ++ (case record.result of
+                    Just (Ok url) ->
+                        [ Html.text (Url.toString url) ]
+
+                    Just (Err (Http.BadUrl url)) ->
+                        [ Html.text ("urlが悪かった" ++ url) ]
+
+                    Just (Err Http.Timeout) ->
+                        [ Html.text "タイムアウトした" ]
+
+                    Just (Err Http.NetworkError) ->
+                        [ Html.text "ネットワークでエラーが発生しました" ]
+
+                    Just (Err (Http.BadStatus number)) ->
+                        [ Html.text ("エラーが発生しました" ++ String.fromInt number) ]
+
+                    Just (Err (Http.BadBody message)) ->
+                        [ Html.text ("レスポンスのデコードでエラーが発生しました " ++ message) ]
+
+                    Nothing ->
+                        []
+               )
     }

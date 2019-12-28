@@ -8,7 +8,9 @@ export namespace Elm {
   }
 }
 
-type Ports = {};
+type Ports = {
+  jumpPage: SubForElmCmd<string>;
+};
 
 type SubForElmCmd<T> = {
   subscribe: (arg: (value: T) => void) => void;
