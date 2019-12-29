@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 
@@ -22,6 +23,7 @@ public class Api extends HttpServlet {
         getLineLogInUrl(response);
         return;
       case "/callback":
+        logInCallBack(mapFromURLQueryString(request.getQueryString()), response);
         return;
     }
     response
@@ -57,6 +59,19 @@ public class Api extends HttpServlet {
     }
   }
 
+  private static void logInCallBack(Map<String, String> parameters, HttpServletResponse response) {
+    response.setContentType("application/json");
+    String code = parameters.get("code");
+    String state = parameters.get("state");
+    try {
+      response
+          .getWriter()
+          .append("\"ちょっとまって\"");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
   private static String URLQueryStringFromMap(Map<String, String> hashMap) {
     StringJoiner stringJoiner = new StringJoiner("&");
     for (Map.Entry<String, String> entry : hashMap.entrySet()) {
@@ -66,6 +81,16 @@ public class Api extends HttpServlet {
               + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
     }
     return stringJoiner.toString();
+  }
+
+  private static Map<String, String> mapFromURLQueryString(String string) {
+    String[] keyAndValueArray = string.split("&");
+    Map<String, String> map = new HashMap<>();
+    for (String keyAndValue : keyAndValueArray) {
+      String[] keyAndValueTuple = keyAndValue.split("=");
+      map.put(keyAndValueTuple[0], keyAndValueTuple[1]);
+    }
+    return map;
   }
 
   @Override
