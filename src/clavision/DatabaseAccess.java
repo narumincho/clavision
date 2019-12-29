@@ -1,8 +1,10 @@
 package clavision;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.sql.SQLException;
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.util.Properties;
 
 class DatabaseAccess {
   private static final String dbName = "tutorial";
@@ -10,13 +12,22 @@ class DatabaseAccess {
   private static final String url = "jdbc:postgresql://" + sqlHostname + "/" + dbName;
   private static Connection connection;
 
-  static Connection getConnection() {
+  static @NotNull Connection getConnection() {
+    System.out.println("always call in getConnection");
     if (connection == null) {
       try {
-        connection = DriverManager.getConnection(url, "postgres", Key.postgresPassword);
+        Properties properties = new Properties();
+        properties.setProperty("user", "postgres");
+        properties.setProperty("password", Key.postgresPassword);
+        connection = new org.postgresql.Driver().connect(url, properties);
+        if (connection == null) {
+          System.out.println("cannot get connection using DriverManager.getConnection");
+        }
         return connection;
       } catch (SQLException e) {
-        e.printStackTrace();
+        System.out.println("エラー説明開始");
+        System.out.println(e.toString());
+        System.out.println("エラー説明終了");
       }
     }
     return connection;
