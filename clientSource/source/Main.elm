@@ -1,7 +1,8 @@
-port module Main exposing (Model, Msg, init, subscriptions, update, view)
+port module Main exposing (Message, Model, init, subscriptions, update, view)
 
 import Browser
 import Css
+import Css.Transitions
 import Html
 import Html.Styled as S
 import Html.Styled.Attributes as A
@@ -14,7 +15,7 @@ import Url
 port jumpPage : String -> Cmd msg
 
 
-main : Program () Model Msg
+main : Program () Model Message
 main =
     Browser.element
         { init = init
@@ -27,27 +28,87 @@ main =
 type Model
     = Model
         { result : Maybe (Result Http.Error Url.Url)
-        , tab : Tab
+        , menu : Menu
+        , floorMapSelectedBuildingNumber : BuildingNumber
         }
 
 
-type Tab
+type Menu
     = FloorMap
     | TimeTable
 
 
-init : () -> ( Model, Cmd Msg )
+menuAll : List Menu
+menuAll =
+    [ FloorMap, TimeTable ]
+
+
+tabToString : Menu -> String
+tabToString menu =
+    case menu of
+        FloorMap ->
+            "フロアマップ"
+
+        TimeTable ->
+            "時間割"
+
+
+type BuildingNumber
+    = Building1
+    | Building2
+    | Building3
+    | Building4
+    | Building5
+
+
+buildingNumberAll : List BuildingNumber
+buildingNumberAll =
+    [ Building1
+    , Building2
+    , Building3
+    , Building4
+    , Building5
+    ]
+
+
+buildingNumberToString : BuildingNumber -> String
+buildingNumberToString buildingNumber =
+    case buildingNumber of
+        Building1 ->
+            "1号館"
+
+        Building2 ->
+            "2号館"
+
+        Building3 ->
+            "3号館"
+
+        Building4 ->
+            "4号館"
+
+        Building5 ->
+            "5号館"
+
+
+init : () -> ( Model, Cmd Message )
 init () =
-    ( Model { result = Nothing, tab = FloorMap }, Cmd.none )
+    ( Model
+        { result = Nothing
+        , menu = FloorMap
+        , floorMapSelectedBuildingNumber = Building1
+        }
+    , Cmd.none
+    )
 
 
-type Msg
+type Message
     = RequestLineLogInUrl
     | ResponseLineLogInUrl (Result Http.Error Url.Url)
-    | ChangeTab Tab
+    | ChangeMenu Menu
+    | SelectFloorMapBuildingNumber BuildingNumber
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Message -> Model -> ( Model, Cmd Message )
 update msg (Model record) =
     case msg of
         RequestLineLogInUrl ->
@@ -70,8 +131,13 @@ update msg (Model record) =
                     , Cmd.none
                     )
 
-        ChangeTab tab ->
-            ( Model { record | tab = tab }
+        ChangeMenu tab ->
+            ( Model { record | menu = tab }
+            , Cmd.none
+            )
+
+        SelectFloorMapBuildingNumber buildingNumber ->
+            ( Model { record | floorMapSelectedBuildingNumber = buildingNumber }
             , Cmd.none
             )
 
@@ -90,58 +156,209 @@ urlDecoder =
             )
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : Model -> Sub Message
 subscriptions model =
     Sub.none
 
 
-view : Model -> Html.Html Msg
+view : Model -> Html.Html Message
 view (Model record) =
     S.div
         [ A.css
             [ displayGrid
-            , gridTemplateRows [ "64px", "1fr", "64px" ]
+            , gridCellHeightList [ "64px", "1fr", "64px" ]
+            ]
+        ]
+        [ header
+        , case record.menu of
+            FloorMap ->
+                floorMap record.floorMapSelectedBuildingNumber
+
+            TimeTable ->
+                timeTable
+        , menuView record.menu
+        ]
+        |> S.toUnstyled
+
+
+header : S.Html message
+header =
+    S.div
+        [ A.css
+            [ Css.backgroundColor themeColor
+            , Css.color (Css.rgb 255 255 255)
+            , displayGrid
+            , Css.justifyContent Css.center
+            , Css.alignItems Css.center
+            , Css.fontSize (Css.rem 1.5)
+            ]
+        ]
+        [ S.text "クラビジョン" ]
+
+
+floorMap : BuildingNumber -> S.Html Message
+floorMap buildingNumber =
+    S.div
+        [ A.css [ displayGrid, gridCellHeightList [ "48px", "1fr" ] ]
+        ]
+        (buildingNumberTab buildingNumber
+            :: (case buildingNumber of
+                    Building1 ->
+                        [ S.text "1号館" ]
+
+                    Building2 ->
+                        [ S.text "2号館" ]
+
+                    Building3 ->
+                        [ S.text "3号館" ]
+
+                    Building4 ->
+                        [ S.text "4号館" ]
+
+                    Building5 ->
+                        [ S.text "5号館" ]
+               )
+        )
+
+
+buildingNumberTab : BuildingNumber -> S.Html Message
+buildingNumberTab buildingNumber =
+    tabView buildingNumber SelectFloorMapBuildingNumber buildingNumberToString buildingNumberAll
+
+
+tabView : a -> (a -> msg) -> (a -> String) -> List a -> S.Html msg
+tabView selected messageFunction textFunction all =
+    let
+        count =
+            List.length all
+    in
+    S.div
+        [ A.css
+            [ displayGrid
+            , gridCellWidthList (List.repeat count "1fr")
+            ]
+        ]
+        ((all |> List.indexedMap (tabItem selected messageFunction textFunction))
+            ++ [ tabSelectedBar count (elementIndex all selected) ]
+        )
+
+
+elementIndex : List a -> a -> Int
+elementIndex list a =
+    case list of
+        x :: xs ->
+            if x == a then
+                0
+
+            else
+                1 + elementIndex xs a
+
+        [] ->
+            0
+
+
+tabSelectedBar : Int -> Int -> S.Html message
+tabSelectedBar count index =
+    S.div
+        [ A.css
+            [ Css.position Css.relative
+            , Css.pointerEvents Css.none
+            , gridCellX 0 count
+            , gridCellY 0 1
+            , Css.alignSelf Css.end
+            , Css.height (Css.px 4)
             ]
         ]
         [ S.div
             [ A.css
-                [ Css.backgroundColor themeColor
-                , Css.color (Css.rgb 255 255 255)
-                , displayGrid
+                [ Css.position Css.absolute
+                , Css.backgroundColor themeColor
+                , Css.height (Css.pct 100)
+                , Css.Transitions.transition
+                    [ Css.Transitions.left3 300 0 Css.Transitions.ease ]
+                , Css.property "left" ("calc( 100% / " ++ String.fromInt count ++ " * " ++ String.fromInt index ++ ")")
+                , Css.property "width" ("calc( 100% / " ++ String.fromInt count ++ ")")
+                ]
+            ]
+            []
+        ]
+
+
+tabItem : a -> (a -> msg) -> (a -> String) -> Int -> a -> S.Html msg
+tabItem selected messageFunction textFunction index element =
+    if selected == element then
+        S.div
+            [ A.css
+                [ displayGrid
                 , Css.justifyContent Css.center
                 , Css.alignItems Css.center
-                , Css.fontSize (Css.rem 1.5)
+                , Css.color themeColor
+                , Css.backgroundColor (Css.rgb 244 244 244)
+                , userSelectNone
+                , gridCellX index 1
+                , gridCellY 0 1
+                , Css.fontWeight Css.bold
                 ]
             ]
-            [ S.text "クラビジョン" ]
-        , S.div
-            []
-            [ S.text "中身" ]
-        , S.div
-            [ A.css [ Css.backgroundColor themeColor, displayGrid ]
-            ]
-            [ S.div
-                [ A.css [ displayGrid, gridTemplateColumns [ "1fr", "1fr" ] ] ]
-                [ menuItem
-                    (if record.tab == TimeTable then
-                        Just (ChangeTab FloorMap)
+            [ S.text (textFunction element) ]
 
-                     else
-                        Nothing
-                    )
-                    "フロアマップ"
-                , menuItem
-                    (if record.tab == FloorMap then
-                        Just (ChangeTab TimeTable)
-
-                     else
-                        Nothing
-                    )
-                    "時間割表"
+    else
+        S.button
+            [ Html.Styled.Events.onClick (messageFunction element)
+            , A.css
+                [ displayGrid
+                , Css.justifyContent Css.center
+                , Css.alignItems Css.center
+                , Css.color (Css.rgb 85 85 85)
+                , Css.backgroundColor (Css.rgb 244 244 244)
+                , userSelectNone
+                , gridCellX index 1
+                , gridCellY 0 1
+                , Css.cursor Css.pointer
+                , Css.hover
+                    [ Css.backgroundColor (Css.rgb 221 221 221)
+                    , Css.color themeColor
+                    ]
+                , Css.border2 Css.zero Css.none
                 ]
+            ]
+            [ S.text (textFunction element) ]
+
+
+timeTable : S.Html Message
+timeTable =
+    S.div
+        []
+        [ S.text "時間割表" ]
+
+
+menuView : Menu -> S.Html Message
+menuView tab =
+    S.div
+        [ A.css [ Css.backgroundColor themeColor, displayGrid ]
+        ]
+        [ S.div
+            [ A.css [ displayGrid, gridCellWidthList [ "1fr", "1fr" ] ] ]
+            [ menuItem
+                (case tab of
+                    TimeTable ->
+                        Just (ChangeMenu FloorMap)
+
+                    FloorMap ->
+                        Nothing
+                )
+                "フロアマップ"
+            , menuItem
+                (case tab of
+                    FloorMap ->
+                        Just (ChangeMenu TimeTable)
+
+                    TimeTable ->
+                        Nothing
+                )
+                "時間割表"
             ]
         ]
-        |> S.toUnstyled
 
 
 menuItem : Maybe message -> String -> S.Html message
@@ -182,11 +399,30 @@ displayGrid =
     Css.property "display" "grid"
 
 
-gridTemplateRows : List String -> Css.Style
-gridTemplateRows list =
+gridCellHeightList : List String -> Css.Style
+gridCellHeightList list =
     Css.property "grid-template-rows" (list |> String.join " ")
 
 
-gridTemplateColumns : List String -> Css.Style
-gridTemplateColumns list =
+gridCellWidthList : List String -> Css.Style
+gridCellWidthList list =
     Css.property "grid-template-columns" (list |> String.join " ")
+
+
+gridCellY : Int -> Int -> Css.Style
+gridCellY y height =
+    Css.property
+        "grid-row"
+        (String.fromInt (1 + y) ++ " / " ++ String.fromInt (1 + y + height))
+
+
+gridCellX : Int -> Int -> Css.Style
+gridCellX x width =
+    Css.property
+        "grid-column"
+        (String.fromInt (1 + x) ++ " / " ++ String.fromInt (1 + x + width))
+
+
+userSelectNone : Css.Style
+userSelectNone =
+    Css.property "user-select" "none"
