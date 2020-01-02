@@ -12988,12 +12988,6 @@ var $author$project$Main$gridCellWidthList = function (list) {
 		'grid-template-columns',
 		A2($elm$core$String$join, ' ', list));
 };
-var $rtfeldman$elm_css$VirtualDom$Styled$KeyedNode = F3(
-	function (a, b, c) {
-		return {$: 'KeyedNode', a: a, b: b, c: c};
-	});
-var $rtfeldman$elm_css$VirtualDom$Styled$keyedNode = $rtfeldman$elm_css$VirtualDom$Styled$KeyedNode;
-var $rtfeldman$elm_css$Html$Styled$Keyed$node = $rtfeldman$elm_css$VirtualDom$Styled$keyedNode;
 var $elm$core$List$repeatHelp = F3(
 	function (result, n, value) {
 		repeatHelp:
@@ -13237,71 +13231,69 @@ var $rtfeldman$elm_css$Css$UnitlessInteger = {$: 'UnitlessInteger'};
 var $rtfeldman$elm_css$Css$zero = {length: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible, number: $rtfeldman$elm_css$Css$Structure$Compatible, numericValue: 0, outline: $rtfeldman$elm_css$Css$Structure$Compatible, unitLabel: '', units: $rtfeldman$elm_css$Css$UnitlessInteger, value: '0'};
 var $author$project$Main$tabItem = F5(
 	function (selected, messageFunction, textFunction, index, element) {
-		return _Utils_Tuple2(
-			$elm$core$String$fromInt(index),
-			_Utils_eq(selected, element) ? A2(
-				$rtfeldman$elm_css$Html$Styled$div,
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$css(
-						_List_fromArray(
-							[
-								$author$project$Main$displayGrid,
-								$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
-								$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
-								$rtfeldman$elm_css$Css$color($author$project$Main$themeColor),
-								$rtfeldman$elm_css$Css$backgroundColor(
-								A3($rtfeldman$elm_css$Css$rgb, 244, 244, 244)),
-								$author$project$Main$userSelectNone,
-								A2($author$project$Main$gridCellX, index, 1),
-								A2($author$project$Main$gridCellY, 0, 1),
-								$rtfeldman$elm_css$Css$fontWeight($rtfeldman$elm_css$Css$bold),
-								A2($rtfeldman$elm_css$Css$border2, $rtfeldman$elm_css$Css$zero, $rtfeldman$elm_css$Css$none),
-								$rtfeldman$elm_css$Css$fontSize(
-								$rtfeldman$elm_css$Css$rem(1))
-							]))
-					]),
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$text(
-						textFunction(element))
-					])) : A2(
-				$rtfeldman$elm_css$Html$Styled$button,
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$Events$onClick(
-						messageFunction(element)),
-						$rtfeldman$elm_css$Html$Styled$Attributes$css(
-						_List_fromArray(
-							[
-								$author$project$Main$displayGrid,
-								$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
-								$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
-								$rtfeldman$elm_css$Css$color(
-								A3($rtfeldman$elm_css$Css$rgb, 85, 85, 85)),
-								$rtfeldman$elm_css$Css$backgroundColor(
-								A3($rtfeldman$elm_css$Css$rgb, 244, 244, 244)),
-								$author$project$Main$userSelectNone,
-								A2($author$project$Main$gridCellX, index, 1),
-								A2($author$project$Main$gridCellY, 0, 1),
-								$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer),
-								$rtfeldman$elm_css$Css$hover(
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Css$backgroundColor(
-										A3($rtfeldman$elm_css$Css$rgb, 221, 221, 221)),
-										$rtfeldman$elm_css$Css$color($author$project$Main$themeColor)
-									])),
-								A2($rtfeldman$elm_css$Css$border2, $rtfeldman$elm_css$Css$zero, $rtfeldman$elm_css$Css$none),
-								$rtfeldman$elm_css$Css$fontSize(
-								$rtfeldman$elm_css$Css$rem(1))
-							]))
-					]),
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$text(
-						textFunction(element))
-					])));
+		return _Utils_eq(selected, element) ? A2(
+			$rtfeldman$elm_css$Html$Styled$div,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$css(
+					_List_fromArray(
+						[
+							$author$project$Main$displayGrid,
+							$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
+							$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
+							$rtfeldman$elm_css$Css$color($author$project$Main$themeColor),
+							$rtfeldman$elm_css$Css$backgroundColor(
+							A3($rtfeldman$elm_css$Css$rgb, 244, 244, 244)),
+							$author$project$Main$userSelectNone,
+							A2($author$project$Main$gridCellX, index, 1),
+							A2($author$project$Main$gridCellY, 0, 1),
+							$rtfeldman$elm_css$Css$fontWeight($rtfeldman$elm_css$Css$bold),
+							A2($rtfeldman$elm_css$Css$border2, $rtfeldman$elm_css$Css$zero, $rtfeldman$elm_css$Css$none),
+							$rtfeldman$elm_css$Css$fontSize(
+							$rtfeldman$elm_css$Css$rem(1))
+						]))
+				]),
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$text(
+					textFunction(element))
+				])) : A2(
+			$rtfeldman$elm_css$Html$Styled$button,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Events$onClick(
+					messageFunction(element)),
+					$rtfeldman$elm_css$Html$Styled$Attributes$css(
+					_List_fromArray(
+						[
+							$author$project$Main$displayGrid,
+							$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
+							$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
+							$rtfeldman$elm_css$Css$color(
+							A3($rtfeldman$elm_css$Css$rgb, 85, 85, 85)),
+							$rtfeldman$elm_css$Css$backgroundColor(
+							A3($rtfeldman$elm_css$Css$rgb, 244, 244, 244)),
+							$author$project$Main$userSelectNone,
+							A2($author$project$Main$gridCellX, index, 1),
+							A2($author$project$Main$gridCellY, 0, 1),
+							$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer),
+							$rtfeldman$elm_css$Css$hover(
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$backgroundColor(
+									A3($rtfeldman$elm_css$Css$rgb, 221, 221, 221)),
+									$rtfeldman$elm_css$Css$color($author$project$Main$themeColor)
+								])),
+							A2($rtfeldman$elm_css$Css$border2, $rtfeldman$elm_css$Css$zero, $rtfeldman$elm_css$Css$none),
+							$rtfeldman$elm_css$Css$fontSize(
+							$rtfeldman$elm_css$Css$rem(1))
+						]))
+				]),
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$text(
+					textFunction(element))
+				]));
 	});
 var $rtfeldman$elm_css$Css$alignSelf = function (fn) {
 	return A3(
@@ -13391,9 +13383,8 @@ var $rtfeldman$elm_css$Css$translateX = function (_v0) {
 };
 var $author$project$Main$tabSelectedBar = F3(
 	function (count, beforeSelected, index) {
-		return A3(
-			$rtfeldman$elm_css$Html$Styled$Keyed$node,
-			'div',
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$div,
 			_List_fromArray(
 				[
 					$rtfeldman$elm_css$Html$Styled$Attributes$css(
@@ -13410,63 +13401,60 @@ var $author$project$Main$tabSelectedBar = F3(
 				]),
 			_List_fromArray(
 				[
-					_Utils_Tuple2(
-					'a',
 					A2(
-						$rtfeldman$elm_css$Html$Styled$div,
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$Attributes$css(
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Css$backgroundColor($author$project$Main$themeColor),
-										$rtfeldman$elm_css$Css$height(
-										$rtfeldman$elm_css$Css$pct(100)),
-										$rtfeldman$elm_css$Css$animationName(
-										$rtfeldman$elm_css$Css$Animations$keyframes(
-											_List_fromArray(
-												[
-													_Utils_Tuple2(
-													0,
-													_List_fromArray(
-														[
-															$rtfeldman$elm_css$Css$Animations$transform(
-															_List_fromArray(
-																[
-																	$rtfeldman$elm_css$Css$translateX(
-																	$rtfeldman$elm_css$Css$pct(beforeSelected * 100))
-																]))
-														])),
-													_Utils_Tuple2(
-													100,
-													_List_fromArray(
-														[
-															$rtfeldman$elm_css$Css$Animations$transform(
-															_List_fromArray(
-																[
-																	$rtfeldman$elm_css$Css$translateX(
-																	$rtfeldman$elm_css$Css$pct(index * 100))
-																]))
-														]))
-												]))),
-										$rtfeldman$elm_css$Css$animationDuration(
-										$rtfeldman$elm_css$Css$ms(200)),
-										A2($rtfeldman$elm_css$Css$property, 'animation-fill-mode', 'forwards'),
-										A2(
-										$rtfeldman$elm_css$Css$property,
-										'width',
-										'calc( 100% / ' + ($elm$core$String$fromInt(count) + ')'))
-									]))
-							]),
-						_List_Nil))
+					$rtfeldman$elm_css$Html$Styled$div,
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$css(
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$backgroundColor($author$project$Main$themeColor),
+									$rtfeldman$elm_css$Css$height(
+									$rtfeldman$elm_css$Css$pct(100)),
+									$rtfeldman$elm_css$Css$animationName(
+									$rtfeldman$elm_css$Css$Animations$keyframes(
+										_List_fromArray(
+											[
+												_Utils_Tuple2(
+												0,
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Css$Animations$transform(
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Css$translateX(
+																$rtfeldman$elm_css$Css$pct(beforeSelected * 100))
+															]))
+													])),
+												_Utils_Tuple2(
+												100,
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Css$Animations$transform(
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Css$translateX(
+																$rtfeldman$elm_css$Css$pct(index * 100))
+															]))
+													]))
+											]))),
+									$rtfeldman$elm_css$Css$animationDuration(
+									$rtfeldman$elm_css$Css$ms(200)),
+									A2($rtfeldman$elm_css$Css$property, 'animation-fill-mode', 'forwards'),
+									A2(
+									$rtfeldman$elm_css$Css$property,
+									'width',
+									'calc( 100% / ' + ($elm$core$String$fromInt(count) + ')'))
+								]))
+						]),
+					_List_Nil)
 				]));
 	});
 var $author$project$Main$tabView = F5(
 	function (beforeSelected, selected, messageFunction, textFunction, all) {
 		var count = $elm$core$List$length(all);
-		return A3(
-			$rtfeldman$elm_css$Html$Styled$Keyed$node,
-			'div',
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$div,
 			_List_fromArray(
 				[
 					$rtfeldman$elm_css$Html$Styled$Attributes$css(
@@ -13484,13 +13472,11 @@ var $author$project$Main$tabView = F5(
 					all),
 				_List_fromArray(
 					[
-						_Utils_Tuple2(
-						's',
 						A3(
-							$author$project$Main$tabSelectedBar,
-							count,
-							A2($author$project$Main$elementIndex, all, beforeSelected),
-							A2($author$project$Main$elementIndex, all, selected)))
+						$author$project$Main$tabSelectedBar,
+						count,
+						A2($author$project$Main$elementIndex, all, beforeSelected),
+						A2($author$project$Main$elementIndex, all, selected))
 					])));
 	});
 var $author$project$Main$buildingNumberTab = F2(
@@ -13505,9 +13491,8 @@ var $author$project$Main$gridCellHeightList = function (list) {
 };
 var $author$project$Main$floorMap = F2(
 	function (beforeSelected, buildingNumber) {
-		return A3(
-			$rtfeldman$elm_css$Html$Styled$Keyed$node,
-			'div',
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$div,
 			_List_fromArray(
 				[
 					$rtfeldman$elm_css$Html$Styled$Attributes$css(
@@ -13521,13 +13506,9 @@ var $author$project$Main$floorMap = F2(
 				]),
 			_List_fromArray(
 				[
-					_Utils_Tuple2(
-					'tab',
-					A2($author$project$Main$buildingNumberTab, beforeSelected, buildingNumber)),
-					_Utils_Tuple2(
-					'body',
+					A2($author$project$Main$buildingNumberTab, beforeSelected, buildingNumber),
 					$rtfeldman$elm_css$Html$Styled$text(
-						$author$project$Main$buildingNumberToString(buildingNumber)))
+					$author$project$Main$buildingNumberToString(buildingNumber))
 				]));
 	});
 var $author$project$Main$header = A2(

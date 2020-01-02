@@ -3,12 +3,10 @@ port module Main exposing (Message, Model, init, subscriptions, update, view)
 import Browser
 import Css
 import Css.Animations
-import Css.Transitions
 import Html
 import Html.Styled as S
 import Html.Styled.Attributes as A
 import Html.Styled.Events
-import Html.Styled.Keyed
 import Http
 import Json.Decode
 import Url
@@ -39,21 +37,6 @@ type Model
 type Menu
     = FloorMap
     | TimeTable
-
-
-menuAll : List Menu
-menuAll =
-    [ FloorMap, TimeTable ]
-
-
-tabToString : Menu -> String
-tabToString menu =
-    case menu of
-        FloorMap ->
-            "フロアマップ"
-
-        TimeTable ->
-            "時間割"
 
 
 type BuildingNumber
@@ -206,12 +189,11 @@ header =
 
 floorMap : BuildingNumber -> BuildingNumber -> S.Html Message
 floorMap beforeSelected buildingNumber =
-    Html.Styled.Keyed.node
-        "div"
+    S.div
         [ A.css [ displayGrid, gridCellHeightList [ "48px", "1fr" ] ]
         ]
-        [ ( "tab", buildingNumberTab beforeSelected buildingNumber )
-        , ( "body", S.text (buildingNumberToString buildingNumber) )
+        [ buildingNumberTab beforeSelected buildingNumber
+        , S.text (buildingNumberToString buildingNumber)
         ]
 
 
@@ -226,15 +208,14 @@ tabView beforeSelected selected messageFunction textFunction all =
         count =
             List.length all
     in
-    Html.Styled.Keyed.node
-        "div"
+    S.div
         [ A.css
             [ displayGrid
             , gridCellWidthList (List.repeat count "1fr")
             ]
         ]
         ((all |> List.indexedMap (tabItem selected messageFunction textFunction))
-            ++ [ ( "s", tabSelectedBar count (elementIndex all beforeSelected) (elementIndex all selected) ) ]
+            ++ [ tabSelectedBar count (elementIndex all beforeSelected) (elementIndex all selected) ]
         )
 
 
@@ -254,8 +235,7 @@ elementIndex list a =
 
 tabSelectedBar : Int -> Int -> Int -> S.Html message
 tabSelectedBar count beforeSelected index =
-    Html.Styled.Keyed.node
-        "div"
+    S.div
         [ A.css
             [ Css.position Css.relative
             , Css.pointerEvents Css.none
@@ -265,39 +245,36 @@ tabSelectedBar count beforeSelected index =
             , Css.height (Css.px 4)
             ]
         ]
-        [ ( "a"
-          , S.div
-                [ A.css
-                    [ Css.backgroundColor themeColor
-                    , Css.height (Css.pct 100)
-                    , Css.animationName
-                        (Css.Animations.keyframes
-                            [ ( 0
-                              , [ Css.Animations.transform
-                                    [ Css.translateX (Css.pct (toFloat beforeSelected * 100)) ]
-                                ]
-                              )
-                            , ( 100
-                              , [ Css.Animations.transform
-                                    [ Css.translateX (Css.pct (toFloat index * 100)) ]
-                                ]
-                              )
+        [ S.div
+            [ A.css
+                [ Css.backgroundColor themeColor
+                , Css.height (Css.pct 100)
+                , Css.animationName
+                    (Css.Animations.keyframes
+                        [ ( 0
+                          , [ Css.Animations.transform
+                                [ Css.translateX (Css.pct (toFloat beforeSelected * 100)) ]
                             ]
-                        )
-                    , Css.animationDuration (Css.ms 200)
-                    , Css.property "animation-fill-mode" "forwards"
-                    , Css.property "width" ("calc( 100% / " ++ String.fromInt count ++ ")")
-                    ]
+                          )
+                        , ( 100
+                          , [ Css.Animations.transform
+                                [ Css.translateX (Css.pct (toFloat index * 100)) ]
+                            ]
+                          )
+                        ]
+                    )
+                , Css.animationDuration (Css.ms 200)
+                , Css.property "animation-fill-mode" "forwards"
+                , Css.property "width" ("calc( 100% / " ++ String.fromInt count ++ ")")
                 ]
-                []
-          )
+            ]
+            []
         ]
 
 
-tabItem : a -> (a -> msg) -> (a -> String) -> Int -> a -> ( String, S.Html msg )
+tabItem : a -> (a -> msg) -> (a -> String) -> Int -> a -> S.Html msg
 tabItem selected messageFunction textFunction index element =
-    ( String.fromInt index
-    , if selected == element then
+    if selected == element then
         S.div
             [ A.css
                 [ displayGrid
@@ -315,7 +292,7 @@ tabItem selected messageFunction textFunction index element =
             ]
             [ S.text (textFunction element) ]
 
-      else
+    else
         S.button
             [ Html.Styled.Events.onClick (messageFunction element)
             , A.css
@@ -335,11 +312,8 @@ tabItem selected messageFunction textFunction index element =
                 , Css.border2 Css.zero Css.none
                 , Css.fontSize (Css.rem 1)
                 ]
-
-            --, A.disabled False
             ]
             [ S.text (textFunction element) ]
-    )
 
 
 timeTable : S.Html Message
