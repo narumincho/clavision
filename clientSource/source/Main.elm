@@ -2,11 +2,13 @@ port module Main exposing (Message, Model, init, subscriptions, update, view)
 
 import Browser
 import Css
+import Css.Animations
 import Css.Transitions
 import Html
 import Html.Styled as S
 import Html.Styled.Attributes as A
 import Html.Styled.Events
+import Html.Styled.Keyed
 import Http
 import Json.Decode
 import Url
@@ -30,6 +32,7 @@ type Model
         { result : Maybe (Result Http.Error Url.Url)
         , menu : Menu
         , floorMapSelectedBuildingNumber : BuildingNumber
+        , beforeSelectedBuildingNumber : BuildingNumber
         }
 
 
@@ -96,6 +99,7 @@ init () =
         { result = Nothing
         , menu = FloorMap
         , floorMapSelectedBuildingNumber = Building1
+        , beforeSelectedBuildingNumber = Building1
         }
     , Cmd.none
     )
@@ -137,7 +141,11 @@ update msg (Model record) =
             )
 
         SelectFloorMapBuildingNumber buildingNumber ->
-            ( Model { record | floorMapSelectedBuildingNumber = buildingNumber }
+            ( Model
+                { record
+                    | floorMapSelectedBuildingNumber = buildingNumber
+                    , beforeSelectedBuildingNumber = record.floorMapSelectedBuildingNumber
+                }
             , Cmd.none
             )
 
@@ -172,7 +180,7 @@ view (Model record) =
         [ header
         , case record.menu of
             FloorMap ->
-                floorMap record.floorMapSelectedBuildingNumber
+                floorMap record.beforeSelectedBuildingNumber record.floorMapSelectedBuildingNumber
 
             TimeTable ->
                 timeTable
@@ -196,50 +204,37 @@ header =
         [ S.text "クラビジョン" ]
 
 
-floorMap : BuildingNumber -> S.Html Message
-floorMap buildingNumber =
-    S.div
+floorMap : BuildingNumber -> BuildingNumber -> S.Html Message
+floorMap beforeSelected buildingNumber =
+    Html.Styled.Keyed.node
+        "div"
         [ A.css [ displayGrid, gridCellHeightList [ "48px", "1fr" ] ]
         ]
-        (buildingNumberTab buildingNumber
-            :: (case buildingNumber of
-                    Building1 ->
-                        [ S.text "1号館" ]
-
-                    Building2 ->
-                        [ S.text "2号館" ]
-
-                    Building3 ->
-                        [ S.text "3号館" ]
-
-                    Building4 ->
-                        [ S.text "4号館" ]
-
-                    Building5 ->
-                        [ S.text "5号館" ]
-               )
-        )
+        [ ( "tab", buildingNumberTab beforeSelected buildingNumber )
+        , ( "body", S.text (buildingNumberToString buildingNumber) )
+        ]
 
 
-buildingNumberTab : BuildingNumber -> S.Html Message
-buildingNumberTab buildingNumber =
-    tabView buildingNumber SelectFloorMapBuildingNumber buildingNumberToString buildingNumberAll
+buildingNumberTab : BuildingNumber -> BuildingNumber -> S.Html Message
+buildingNumberTab beforeSelected buildingNumber =
+    tabView beforeSelected buildingNumber SelectFloorMapBuildingNumber buildingNumberToString buildingNumberAll
 
 
-tabView : a -> (a -> msg) -> (a -> String) -> List a -> S.Html msg
-tabView selected messageFunction textFunction all =
+tabView : a -> a -> (a -> msg) -> (a -> String) -> List a -> S.Html msg
+tabView beforeSelected selected messageFunction textFunction all =
     let
         count =
             List.length all
     in
-    S.div
+    Html.Styled.Keyed.node
+        "div"
         [ A.css
             [ displayGrid
             , gridCellWidthList (List.repeat count "1fr")
             ]
         ]
         ((all |> List.indexedMap (tabItem selected messageFunction textFunction))
-            ++ [ tabSelectedBar count (elementIndex all selected) ]
+            ++ [ ( "s", tabSelectedBar count (elementIndex all beforeSelected) (elementIndex all selected) ) ]
         )
 
 
@@ -257,9 +252,10 @@ elementIndex list a =
             0
 
 
-tabSelectedBar : Int -> Int -> S.Html message
-tabSelectedBar count index =
-    S.div
+tabSelectedBar : Int -> Int -> Int -> S.Html message
+tabSelectedBar count beforeSelected index =
+    Html.Styled.Keyed.node
+        "div"
         [ A.css
             [ Css.position Css.relative
             , Css.pointerEvents Css.none
@@ -269,24 +265,39 @@ tabSelectedBar count index =
             , Css.height (Css.px 4)
             ]
         ]
-        [ S.div
-            [ A.css
-                [ Css.position Css.absolute
-                , Css.backgroundColor themeColor
-                , Css.height (Css.pct 100)
-                , Css.Transitions.transition
-                    [ Css.Transitions.left3 300 0 Css.Transitions.ease ]
-                , Css.property "left" ("calc( 100% / " ++ String.fromInt count ++ " * " ++ String.fromInt index ++ ")")
-                , Css.property "width" ("calc( 100% / " ++ String.fromInt count ++ ")")
+        [ ( "a"
+          , S.div
+                [ A.css
+                    [ Css.backgroundColor themeColor
+                    , Css.height (Css.pct 100)
+                    , Css.animationName
+                        (Css.Animations.keyframes
+                            [ ( 0
+                              , [ Css.Animations.transform
+                                    [ Css.translateX (Css.pct (toFloat beforeSelected * 100)) ]
+                                ]
+                              )
+                            , ( 100
+                              , [ Css.Animations.transform
+                                    [ Css.translateX (Css.pct (toFloat index * 100)) ]
+                                ]
+                              )
+                            ]
+                        )
+                    , Css.animationDuration (Css.ms 200)
+                    , Css.property "animation-fill-mode" "forwards"
+                    , Css.property "width" ("calc( 100% / " ++ String.fromInt count ++ ")")
+                    ]
                 ]
-            ]
-            []
+                []
+          )
         ]
 
 
-tabItem : a -> (a -> msg) -> (a -> String) -> Int -> a -> S.Html msg
+tabItem : a -> (a -> msg) -> (a -> String) -> Int -> a -> ( String, S.Html msg )
 tabItem selected messageFunction textFunction index element =
-    if selected == element then
+    ( String.fromInt index
+    , if selected == element then
         S.div
             [ A.css
                 [ displayGrid
@@ -298,11 +309,13 @@ tabItem selected messageFunction textFunction index element =
                 , gridCellX index 1
                 , gridCellY 0 1
                 , Css.fontWeight Css.bold
+                , Css.border2 Css.zero Css.none
+                , Css.fontSize (Css.rem 1)
                 ]
             ]
             [ S.text (textFunction element) ]
 
-    else
+      else
         S.button
             [ Html.Styled.Events.onClick (messageFunction element)
             , A.css
@@ -320,9 +333,13 @@ tabItem selected messageFunction textFunction index element =
                     , Css.color themeColor
                     ]
                 , Css.border2 Css.zero Css.none
+                , Css.fontSize (Css.rem 1)
                 ]
+
+            --, A.disabled False
             ]
             [ S.text (textFunction element) ]
+    )
 
 
 timeTable : S.Html Message

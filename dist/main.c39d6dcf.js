@@ -10839,7 +10839,7 @@ var $author$project$Main$Model = function (a) {
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
 		$author$project$Main$Model(
-			{floorMapSelectedBuildingNumber: $author$project$Main$Building1, menu: $author$project$Main$FloorMap, result: $elm$core$Maybe$Nothing}),
+			{beforeSelectedBuildingNumber: $author$project$Main$Building1, floorMapSelectedBuildingNumber: $author$project$Main$Building1, menu: $author$project$Main$FloorMap, result: $elm$core$Maybe$Nothing}),
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -11206,7 +11206,7 @@ var $author$project$Main$update = F2(
 					$author$project$Main$Model(
 						_Utils_update(
 							record,
-							{floorMapSelectedBuildingNumber: buildingNumber})),
+							{beforeSelectedBuildingNumber: record.floorMapSelectedBuildingNumber, floorMapSelectedBuildingNumber: buildingNumber})),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
@@ -12988,6 +12988,12 @@ var $author$project$Main$gridCellWidthList = function (list) {
 		'grid-template-columns',
 		A2($elm$core$String$join, ' ', list));
 };
+var $rtfeldman$elm_css$VirtualDom$Styled$KeyedNode = F3(
+	function (a, b, c) {
+		return {$: 'KeyedNode', a: a, b: b, c: c};
+	});
+var $rtfeldman$elm_css$VirtualDom$Styled$keyedNode = $rtfeldman$elm_css$VirtualDom$Styled$KeyedNode;
+var $rtfeldman$elm_css$Html$Styled$Keyed$node = $rtfeldman$elm_css$VirtualDom$Styled$keyedNode;
 var $elm$core$List$repeatHelp = F3(
 	function (result, n, value) {
 		repeatHelp:
@@ -13132,6 +13138,7 @@ var $rtfeldman$elm_css$Css$color = function (c) {
 	return A2($rtfeldman$elm_css$Css$property, 'color', c.value);
 };
 var $rtfeldman$elm_css$Css$cursor = $rtfeldman$elm_css$Css$prop1('cursor');
+var $rtfeldman$elm_css$Css$fontSize = $rtfeldman$elm_css$Css$prop1('font-size');
 var $rtfeldman$elm_css$Css$fontWeight = function (_v0) {
 	var value = _v0.value;
 	return A2($rtfeldman$elm_css$Css$property, 'font-weight', value);
@@ -13192,6 +13199,8 @@ var $rtfeldman$elm_css$Html$Styled$Events$onClick = function (msg) {
 		$elm$json$Json$Decode$succeed(msg));
 };
 var $rtfeldman$elm_css$Css$pointer = {cursor: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'pointer'};
+var $rtfeldman$elm_css$Css$RemUnits = {$: 'RemUnits'};
+var $rtfeldman$elm_css$Css$rem = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$RemUnits, 'rem');
 var $rtfeldman$elm_css$Css$cssFunction = F2(
 	function (funcName, args) {
 		return funcName + ('(' + (A2($elm$core$String$join, ', ', args) + ')'));
@@ -13228,66 +13237,72 @@ var $rtfeldman$elm_css$Css$UnitlessInteger = {$: 'UnitlessInteger'};
 var $rtfeldman$elm_css$Css$zero = {length: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible, number: $rtfeldman$elm_css$Css$Structure$Compatible, numericValue: 0, outline: $rtfeldman$elm_css$Css$Structure$Compatible, unitLabel: '', units: $rtfeldman$elm_css$Css$UnitlessInteger, value: '0'};
 var $author$project$Main$tabItem = F5(
 	function (selected, messageFunction, textFunction, index, element) {
-		return _Utils_eq(selected, element) ? A2(
-			$rtfeldman$elm_css$Html$Styled$div,
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$Attributes$css(
-					_List_fromArray(
-						[
-							$author$project$Main$displayGrid,
-							$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
-							$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
-							$rtfeldman$elm_css$Css$color($author$project$Main$themeColor),
-							$rtfeldman$elm_css$Css$backgroundColor(
-							A3($rtfeldman$elm_css$Css$rgb, 244, 244, 244)),
-							$author$project$Main$userSelectNone,
-							A2($author$project$Main$gridCellX, index, 1),
-							A2($author$project$Main$gridCellY, 0, 1),
-							$rtfeldman$elm_css$Css$fontWeight($rtfeldman$elm_css$Css$bold)
-						]))
-				]),
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$text(
-					textFunction(element))
-				])) : A2(
-			$rtfeldman$elm_css$Html$Styled$button,
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$Events$onClick(
-					messageFunction(element)),
-					$rtfeldman$elm_css$Html$Styled$Attributes$css(
-					_List_fromArray(
-						[
-							$author$project$Main$displayGrid,
-							$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
-							$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
-							$rtfeldman$elm_css$Css$color(
-							A3($rtfeldman$elm_css$Css$rgb, 85, 85, 85)),
-							$rtfeldman$elm_css$Css$backgroundColor(
-							A3($rtfeldman$elm_css$Css$rgb, 244, 244, 244)),
-							$author$project$Main$userSelectNone,
-							A2($author$project$Main$gridCellX, index, 1),
-							A2($author$project$Main$gridCellY, 0, 1),
-							$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer),
-							$rtfeldman$elm_css$Css$hover(
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Css$backgroundColor(
-									A3($rtfeldman$elm_css$Css$rgb, 221, 221, 221)),
-									$rtfeldman$elm_css$Css$color($author$project$Main$themeColor)
-								])),
-							A2($rtfeldman$elm_css$Css$border2, $rtfeldman$elm_css$Css$zero, $rtfeldman$elm_css$Css$none)
-						]))
-				]),
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$text(
-					textFunction(element))
-				]));
+		return _Utils_Tuple2(
+			$elm$core$String$fromInt(index),
+			_Utils_eq(selected, element) ? A2(
+				$rtfeldman$elm_css$Html$Styled$div,
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$author$project$Main$displayGrid,
+								$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
+								$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
+								$rtfeldman$elm_css$Css$color($author$project$Main$themeColor),
+								$rtfeldman$elm_css$Css$backgroundColor(
+								A3($rtfeldman$elm_css$Css$rgb, 244, 244, 244)),
+								$author$project$Main$userSelectNone,
+								A2($author$project$Main$gridCellX, index, 1),
+								A2($author$project$Main$gridCellY, 0, 1),
+								$rtfeldman$elm_css$Css$fontWeight($rtfeldman$elm_css$Css$bold),
+								A2($rtfeldman$elm_css$Css$border2, $rtfeldman$elm_css$Css$zero, $rtfeldman$elm_css$Css$none),
+								$rtfeldman$elm_css$Css$fontSize(
+								$rtfeldman$elm_css$Css$rem(1))
+							]))
+					]),
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$text(
+						textFunction(element))
+					])) : A2(
+				$rtfeldman$elm_css$Html$Styled$button,
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Events$onClick(
+						messageFunction(element)),
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$author$project$Main$displayGrid,
+								$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
+								$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
+								$rtfeldman$elm_css$Css$color(
+								A3($rtfeldman$elm_css$Css$rgb, 85, 85, 85)),
+								$rtfeldman$elm_css$Css$backgroundColor(
+								A3($rtfeldman$elm_css$Css$rgb, 244, 244, 244)),
+								$author$project$Main$userSelectNone,
+								A2($author$project$Main$gridCellX, index, 1),
+								A2($author$project$Main$gridCellY, 0, 1),
+								$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer),
+								$rtfeldman$elm_css$Css$hover(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$backgroundColor(
+										A3($rtfeldman$elm_css$Css$rgb, 221, 221, 221)),
+										$rtfeldman$elm_css$Css$color($author$project$Main$themeColor)
+									])),
+								A2($rtfeldman$elm_css$Css$border2, $rtfeldman$elm_css$Css$zero, $rtfeldman$elm_css$Css$none),
+								$rtfeldman$elm_css$Css$fontSize(
+								$rtfeldman$elm_css$Css$rem(1))
+							]))
+					]),
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$text(
+						textFunction(element))
+					])));
 	});
-var $rtfeldman$elm_css$Css$absolute = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'absolute'};
 var $rtfeldman$elm_css$Css$alignSelf = function (fn) {
 	return A3(
 		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
@@ -13295,25 +13310,52 @@ var $rtfeldman$elm_css$Css$alignSelf = function (fn) {
 		'align-self',
 		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
 };
-var $rtfeldman$elm_css$Css$Transitions$Ease = {$: 'Ease'};
-var $rtfeldman$elm_css$Css$Transitions$ease = $rtfeldman$elm_css$Css$Transitions$Ease;
+var $rtfeldman$elm_css$Css$animationDuration = function (arg) {
+	return A2($rtfeldman$elm_css$Css$prop1, 'animation-duration', arg);
+};
+var $rtfeldman$elm_css$Css$Preprocess$WithKeyframes = function (a) {
+	return {$: 'WithKeyframes', a: a};
+};
+var $rtfeldman$elm_css$Css$animationName = function (arg) {
+	return ((arg.value === 'none') || ((arg.value === 'inherit') || ((arg.value === 'unset') || (arg.value === 'initial')))) ? A2($rtfeldman$elm_css$Css$prop1, 'animation-name', arg) : $rtfeldman$elm_css$Css$Preprocess$WithKeyframes(arg.value);
+};
 var $rtfeldman$elm_css$Css$end = $rtfeldman$elm_css$Css$prop1('end');
 var $rtfeldman$elm_css$Css$height = $rtfeldman$elm_css$Css$prop1('height');
-var $rtfeldman$elm_css$Css$Transitions$Left = {$: 'Left'};
-var $rtfeldman$elm_css$Css$Transitions$Transition = function (a) {
-	return {$: 'Transition', a: a};
+var $rtfeldman$elm_css$Css$Internal$printKeyframeSelector = function (_v0) {
+	var percentage = _v0.a;
+	var properties = _v0.b;
+	var propertiesStr = A2(
+		$elm$core$String$join,
+		'',
+		A2(
+			$elm$core$List$map,
+			function (_v1) {
+				var prop = _v1.a;
+				return prop + ';';
+			},
+			properties));
+	var percentageStr = $elm$core$String$fromInt(percentage) + '%';
+	return percentageStr + (' {' + (propertiesStr + '}'));
 };
-var $rtfeldman$elm_css$Css$Transitions$fullTransition = F4(
-	function (animation, duration, delay, timing) {
-		return $rtfeldman$elm_css$Css$Transitions$Transition(
-			{
-				animation: animation,
-				delay: $elm$core$Maybe$Just(delay),
-				duration: duration,
-				timing: $elm$core$Maybe$Just(timing)
-			});
-	});
-var $rtfeldman$elm_css$Css$Transitions$left3 = $rtfeldman$elm_css$Css$Transitions$fullTransition($rtfeldman$elm_css$Css$Transitions$Left);
+var $rtfeldman$elm_css$Css$Internal$compileKeyframes = function (tuples) {
+	return A2(
+		$elm$core$String$join,
+		'\n\n',
+		A2($elm$core$List$map, $rtfeldman$elm_css$Css$Internal$printKeyframeSelector, tuples));
+};
+var $rtfeldman$elm_css$Css$Animations$keyframes = function (tuples) {
+	return $elm$core$List$isEmpty(tuples) ? {keyframes: $rtfeldman$elm_css$Css$Structure$Compatible, none: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'none'} : {
+		keyframes: $rtfeldman$elm_css$Css$Structure$Compatible,
+		none: $rtfeldman$elm_css$Css$Structure$Compatible,
+		value: $rtfeldman$elm_css$Css$Internal$compileKeyframes(tuples)
+	};
+};
+var $rtfeldman$elm_css$Css$ms = function (amount) {
+	return {
+		duration: $rtfeldman$elm_css$Css$Structure$Compatible,
+		value: $elm$core$String$fromFloat(amount) + 'ms'
+	};
+};
 var $rtfeldman$elm_css$Css$PercentageUnits = {$: 'PercentageUnits'};
 var $rtfeldman$elm_css$Css$pct = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PercentageUnits, '%');
 var $rtfeldman$elm_css$Css$pointerEvents = $rtfeldman$elm_css$Css$prop1('pointer-events');
@@ -13321,267 +13363,37 @@ var $rtfeldman$elm_css$Css$position = $rtfeldman$elm_css$Css$prop1('position');
 var $rtfeldman$elm_css$Css$PxUnits = {$: 'PxUnits'};
 var $rtfeldman$elm_css$Css$px = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PxUnits, 'px');
 var $rtfeldman$elm_css$Css$relative = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'relative'};
-var $rtfeldman$elm_css$Css$Transitions$propToString = function (prop) {
-	switch (prop.$) {
-		case 'Background':
-			return 'background';
-		case 'BackgroundColor':
-			return 'background-color';
-		case 'BackgroundPosition':
-			return 'background-position';
-		case 'BackgroundSize':
-			return 'background-size';
-		case 'Border':
-			return 'border';
-		case 'BorderBottom':
-			return 'border-bottom';
-		case 'BorderBottomColor':
-			return 'border-bottom-color';
-		case 'BorderBottomLeftRadius':
-			return 'border-bottom-left-radius';
-		case 'BorderBottomRightRadius':
-			return 'border-bottom-right-radius';
-		case 'BorderBottomWidth':
-			return 'border-bottom-width';
-		case 'BorderColor':
-			return 'border-color';
-		case 'BorderLeft':
-			return 'border-left';
-		case 'BorderLeftColor':
-			return 'border-left-color';
-		case 'BorderLeftWidth':
-			return 'border-left-width';
-		case 'BorderRadius':
-			return 'border-radius';
-		case 'BorderRight':
-			return 'border-right';
-		case 'BorderRightColor':
-			return 'border-right-color';
-		case 'BorderRightWidth':
-			return 'border-right-width';
-		case 'BorderTop':
-			return 'border-top';
-		case 'BorderTopColor':
-			return 'border-top-color';
-		case 'BorderTopLeftRadius':
-			return 'border-top-left-radius';
-		case 'BorderTopRightRadius':
-			return 'border-top-right-radius';
-		case 'BorderTopWidth':
-			return 'border-top-width';
-		case 'BorderWidth':
-			return 'border-width';
-		case 'Bottom':
-			return 'bottom';
-		case 'BoxShadow':
-			return 'box-shadow';
-		case 'CaretColor':
-			return 'caret-color';
-		case 'Clip':
-			return 'clip';
-		case 'ClipPath':
-			return 'clip-path';
-		case 'Color':
-			return 'color';
-		case 'ColumnCount':
-			return 'column-count';
-		case 'ColumnGap':
-			return 'column-gap';
-		case 'ColumnRule':
-			return 'column-rule';
-		case 'ColumnRuleColor':
-			return 'column-rule-color';
-		case 'ColumnRuleWidth':
-			return 'column-rule-width';
-		case 'ColumnWidth':
-			return 'column-width';
-		case 'Columns':
-			return 'columns';
-		case 'Filter':
-			return 'filter';
-		case 'Flex':
-			return 'flex';
-		case 'FlexBasis':
-			return 'flex-basis';
-		case 'FlexGrow':
-			return 'flex-grow';
-		case 'FlexShrink':
-			return 'flex-shrink';
-		case 'Font':
-			return 'font';
-		case 'FontSize':
-			return 'font-size';
-		case 'FontSizeAdjust':
-			return 'font-size-adjust';
-		case 'FontStretch':
-			return 'font-stretch';
-		case 'FontVariationSettings':
-			return 'font-variation-settings';
-		case 'FontWeight':
-			return 'font-weight';
-		case 'GridColumnGap':
-			return 'grid-column-gap';
-		case 'GridGap':
-			return 'grid-gap';
-		case 'GridRowGap':
-			return 'grid-row-gap';
-		case 'Height':
-			return 'height';
-		case 'Left':
-			return 'left';
-		case 'LetterSpacing':
-			return 'letter-spacing';
-		case 'LineHeight':
-			return 'line-height';
-		case 'Margin':
-			return 'margin';
-		case 'MarginBottom':
-			return 'margin-bottom';
-		case 'MarginLeft':
-			return 'margin-left';
-		case 'MarginRight':
-			return 'margin-right';
-		case 'MarginTop':
-			return 'margin-top';
-		case 'Mask':
-			return 'mask';
-		case 'MaskPosition':
-			return 'mask-position';
-		case 'MaskSize':
-			return 'mask-size';
-		case 'MaxHeight':
-			return 'max-height';
-		case 'MaxWidth':
-			return 'max-width';
-		case 'MinHeight':
-			return 'min-height';
-		case 'MinWidth':
-			return 'min-width';
-		case 'ObjectPosition':
-			return 'object-position';
-		case 'Offset':
-			return 'offset';
-		case 'OffsetAnchor':
-			return 'offset-anchor';
-		case 'OffsetDistance':
-			return 'offset-distance';
-		case 'OffsetPath':
-			return 'offset-path';
-		case 'OffsetRotate':
-			return 'offset-rotate';
-		case 'Opacity':
-			return 'opacity';
-		case 'Order':
-			return 'order';
-		case 'Outline':
-			return 'outline';
-		case 'OutlineColor':
-			return 'outline-color';
-		case 'OutlineOffset':
-			return 'outline-offset';
-		case 'OutlineWidth':
-			return 'outline-width';
-		case 'Padding':
-			return 'padding';
-		case 'PaddingBottom':
-			return 'padding-bottom';
-		case 'PaddingLeft':
-			return 'padding-left';
-		case 'PaddingRight':
-			return 'padding-right';
-		case 'PaddingTop':
-			return 'padding-top';
-		case 'Right':
-			return 'right';
-		case 'TabSize':
-			return 'tab-size';
-		case 'TextIndent':
-			return 'text-indent';
-		case 'TextShadow':
-			return 'text-shadow';
-		case 'Top':
-			return 'top';
-		case 'Transform':
-			return 'transform';
-		case 'TransformOrigin':
-			return 'transform-origin';
-		case 'VerticalAlign':
-			return 'vertical-align';
-		case 'Visibility':
-			return 'visibility';
-		case 'Width':
-			return 'width';
-		case 'WordSpacing':
-			return 'word-spacing';
-		default:
-			return 'z-index';
-	}
+var $rtfeldman$elm_css$Css$Internal$Property = function (a) {
+	return {$: 'Property', a: a};
 };
-var $rtfeldman$elm_css$Css$Transitions$timeToString = function (time) {
-	return $elm$core$String$fromFloat(time) + 'ms';
+var $rtfeldman$elm_css$Css$Animations$transform = function (values) {
+	return $rtfeldman$elm_css$Css$Internal$Property(
+		$elm$core$List$isEmpty(values) ? 'transform:none' : ('transform:' + A2(
+			$elm$core$String$join,
+			' ',
+			A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.value;
+				},
+				values))));
 };
-var $rtfeldman$elm_css$Css$Transitions$timingFunctionToString = function (tf) {
-	switch (tf.$) {
-		case 'Ease':
-			return 'ease';
-		case 'Linear':
-			return 'linear';
-		case 'EaseIn':
-			return 'ease-in';
-		case 'EaseOut':
-			return 'ease-out';
-		case 'EaseInOut':
-			return 'ease-in-out';
-		case 'StepStart':
-			return 'step-start';
-		case 'StepEnd':
-			return 'step-end';
-		default:
-			var _float = tf.a;
-			var float2 = tf.b;
-			var float3 = tf.c;
-			var float4 = tf.d;
-			return 'cubic-bezier(' + ($elm$core$String$fromFloat(_float) + (' , ' + ($elm$core$String$fromFloat(float2) + (' , ' + ($elm$core$String$fromFloat(float3) + (' , ' + ($elm$core$String$fromFloat(float4) + ')')))))));
-	}
+var $rtfeldman$elm_css$Css$translateX = function (_v0) {
+	var value = _v0.value;
+	return {
+		transform: $rtfeldman$elm_css$Css$Structure$Compatible,
+		value: A2(
+			$rtfeldman$elm_css$Css$cssFunction,
+			'translateX',
+			_List_fromArray(
+				[value]))
+	};
 };
-var $rtfeldman$elm_css$Css$Transitions$transition = function (options) {
-	var v = A3(
-		$elm$core$String$slice,
-		0,
-		-1,
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, s) {
-					var animation = _v0.a.animation;
-					var duration = _v0.a.duration;
-					var delay = _v0.a.delay;
-					var timing = _v0.a.timing;
-					return s + (A2(
-						$elm$core$String$join,
-						' ',
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Css$Transitions$propToString(animation),
-								$rtfeldman$elm_css$Css$Transitions$timeToString(duration),
-								A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2($elm$core$Maybe$map, $rtfeldman$elm_css$Css$Transitions$timeToString, delay)),
-								A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2($elm$core$Maybe$map, $rtfeldman$elm_css$Css$Transitions$timingFunctionToString, timing))
-							])) + ',');
-				}),
-			'',
-			options));
-	return A2($rtfeldman$elm_css$Css$property, 'transition', v);
-};
-var $author$project$Main$tabSelectedBar = F2(
-	function (count, index) {
-		return A2(
-			$rtfeldman$elm_css$Html$Styled$div,
+var $author$project$Main$tabSelectedBar = F3(
+	function (count, beforeSelected, index) {
+		return A3(
+			$rtfeldman$elm_css$Html$Styled$Keyed$node,
+			'div',
 			_List_fromArray(
 				[
 					$rtfeldman$elm_css$Html$Styled$Attributes$css(
@@ -13598,40 +13410,63 @@ var $author$project$Main$tabSelectedBar = F2(
 				]),
 			_List_fromArray(
 				[
+					_Utils_Tuple2(
+					'a',
 					A2(
-					$rtfeldman$elm_css$Html$Styled$div,
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Html$Styled$Attributes$css(
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$absolute),
-									$rtfeldman$elm_css$Css$backgroundColor($author$project$Main$themeColor),
-									$rtfeldman$elm_css$Css$height(
-									$rtfeldman$elm_css$Css$pct(100)),
-									$rtfeldman$elm_css$Css$Transitions$transition(
-									_List_fromArray(
-										[
-											A3($rtfeldman$elm_css$Css$Transitions$left3, 300, 0, $rtfeldman$elm_css$Css$Transitions$ease)
-										])),
-									A2(
-									$rtfeldman$elm_css$Css$property,
-									'left',
-									'calc( 100% / ' + ($elm$core$String$fromInt(count) + (' * ' + ($elm$core$String$fromInt(index) + ')')))),
-									A2(
-									$rtfeldman$elm_css$Css$property,
-									'width',
-									'calc( 100% / ' + ($elm$core$String$fromInt(count) + ')'))
-								]))
-						]),
-					_List_Nil)
+						$rtfeldman$elm_css$Html$Styled$div,
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$Attributes$css(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$backgroundColor($author$project$Main$themeColor),
+										$rtfeldman$elm_css$Css$height(
+										$rtfeldman$elm_css$Css$pct(100)),
+										$rtfeldman$elm_css$Css$animationName(
+										$rtfeldman$elm_css$Css$Animations$keyframes(
+											_List_fromArray(
+												[
+													_Utils_Tuple2(
+													0,
+													_List_fromArray(
+														[
+															$rtfeldman$elm_css$Css$Animations$transform(
+															_List_fromArray(
+																[
+																	$rtfeldman$elm_css$Css$translateX(
+																	$rtfeldman$elm_css$Css$pct(beforeSelected * 100))
+																]))
+														])),
+													_Utils_Tuple2(
+													100,
+													_List_fromArray(
+														[
+															$rtfeldman$elm_css$Css$Animations$transform(
+															_List_fromArray(
+																[
+																	$rtfeldman$elm_css$Css$translateX(
+																	$rtfeldman$elm_css$Css$pct(index * 100))
+																]))
+														]))
+												]))),
+										$rtfeldman$elm_css$Css$animationDuration(
+										$rtfeldman$elm_css$Css$ms(200)),
+										A2($rtfeldman$elm_css$Css$property, 'animation-fill-mode', 'forwards'),
+										A2(
+										$rtfeldman$elm_css$Css$property,
+										'width',
+										'calc( 100% / ' + ($elm$core$String$fromInt(count) + ')'))
+									]))
+							]),
+						_List_Nil))
 				]));
 	});
-var $author$project$Main$tabView = F4(
-	function (selected, messageFunction, textFunction, all) {
+var $author$project$Main$tabView = F5(
+	function (beforeSelected, selected, messageFunction, textFunction, all) {
 		var count = $elm$core$List$length(all);
-		return A2(
-			$rtfeldman$elm_css$Html$Styled$div,
+		return A3(
+			$rtfeldman$elm_css$Html$Styled$Keyed$node,
+			'div',
 			_List_fromArray(
 				[
 					$rtfeldman$elm_css$Html$Styled$Attributes$css(
@@ -13649,71 +13484,52 @@ var $author$project$Main$tabView = F4(
 					all),
 				_List_fromArray(
 					[
-						A2(
-						$author$project$Main$tabSelectedBar,
-						count,
-						A2($author$project$Main$elementIndex, all, selected))
+						_Utils_Tuple2(
+						's',
+						A3(
+							$author$project$Main$tabSelectedBar,
+							count,
+							A2($author$project$Main$elementIndex, all, beforeSelected),
+							A2($author$project$Main$elementIndex, all, selected)))
 					])));
 	});
-var $author$project$Main$buildingNumberTab = function (buildingNumber) {
-	return A4($author$project$Main$tabView, buildingNumber, $author$project$Main$SelectFloorMapBuildingNumber, $author$project$Main$buildingNumberToString, $author$project$Main$buildingNumberAll);
-};
+var $author$project$Main$buildingNumberTab = F2(
+	function (beforeSelected, buildingNumber) {
+		return A5($author$project$Main$tabView, beforeSelected, buildingNumber, $author$project$Main$SelectFloorMapBuildingNumber, $author$project$Main$buildingNumberToString, $author$project$Main$buildingNumberAll);
+	});
 var $author$project$Main$gridCellHeightList = function (list) {
 	return A2(
 		$rtfeldman$elm_css$Css$property,
 		'grid-template-rows',
 		A2($elm$core$String$join, ' ', list));
 };
-var $author$project$Main$floorMap = function (buildingNumber) {
-	return A2(
-		$rtfeldman$elm_css$Html$Styled$div,
-		_List_fromArray(
-			[
-				$rtfeldman$elm_css$Html$Styled$Attributes$css(
-				_List_fromArray(
-					[
-						$author$project$Main$displayGrid,
-						$author$project$Main$gridCellHeightList(
-						_List_fromArray(
-							['48px', '1fr']))
-					]))
-			]),
-		A2(
-			$elm$core$List$cons,
-			$author$project$Main$buildingNumberTab(buildingNumber),
-			function () {
-				switch (buildingNumber.$) {
-					case 'Building1':
-						return _List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$text('1号館')
-							]);
-					case 'Building2':
-						return _List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$text('2号館')
-							]);
-					case 'Building3':
-						return _List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$text('3号館')
-							]);
-					case 'Building4':
-						return _List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$text('4号館')
-							]);
-					default:
-						return _List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$text('5号館')
-							]);
-				}
-			}()));
-};
-var $rtfeldman$elm_css$Css$fontSize = $rtfeldman$elm_css$Css$prop1('font-size');
-var $rtfeldman$elm_css$Css$RemUnits = {$: 'RemUnits'};
-var $rtfeldman$elm_css$Css$rem = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$RemUnits, 'rem');
+var $author$project$Main$floorMap = F2(
+	function (beforeSelected, buildingNumber) {
+		return A3(
+			$rtfeldman$elm_css$Html$Styled$Keyed$node,
+			'div',
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$css(
+					_List_fromArray(
+						[
+							$author$project$Main$displayGrid,
+							$author$project$Main$gridCellHeightList(
+							_List_fromArray(
+								['48px', '1fr']))
+						]))
+				]),
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'tab',
+					A2($author$project$Main$buildingNumberTab, beforeSelected, buildingNumber)),
+					_Utils_Tuple2(
+					'body',
+					$rtfeldman$elm_css$Html$Styled$text(
+						$author$project$Main$buildingNumberToString(buildingNumber)))
+				]));
+	});
 var $author$project$Main$header = A2(
 	$rtfeldman$elm_css$Html$Styled$div,
 	_List_fromArray(
@@ -14330,7 +14146,7 @@ var $author$project$Main$view = function (_v0) {
 					function () {
 					var _v1 = record.menu;
 					if (_v1.$ === 'FloorMap') {
-						return $author$project$Main$floorMap(record.floorMapSelectedBuildingNumber);
+						return A2($author$project$Main$floorMap, record.beforeSelectedBuildingNumber, record.floorMapSelectedBuildingNumber);
 					} else {
 						return $author$project$Main$timeTable;
 					}
