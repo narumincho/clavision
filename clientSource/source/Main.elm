@@ -30,13 +30,13 @@ type Model
         { result : Maybe (Result Http.Error Url.Url)
         , menu : Menu
         , floorMapSelectedBuildingNumber : BuildingNumber
-        , beforeSelectedBuildingNumber : BuildingNumber
+        , timeTableSelectedWeekday : Weekday
         }
 
 
 type Menu
-    = FloorMap
-    | TimeTable
+    = FloorMap { beforeSelected : BuildingNumber }
+    | TimeTable { beforeSelected : Weekday }
 
 
 type BuildingNumber
@@ -76,13 +76,50 @@ buildingNumberToString buildingNumber =
             "5号館"
 
 
+type Weekday
+    = Monday
+    | Tuesday
+    | Wednesday
+    | Thursday
+    | Friday
+
+
+weekdayAll : List Weekday
+weekdayAll =
+    [ Monday
+    , Tuesday
+    , Wednesday
+    , Thursday
+    , Friday
+    ]
+
+
+weekdayToString : Weekday -> String
+weekdayToString weekday =
+    case weekday of
+        Monday ->
+            "月"
+
+        Tuesday ->
+            "火"
+
+        Wednesday ->
+            "水"
+
+        Thursday ->
+            "木"
+
+        Friday ->
+            "金"
+
+
 init : () -> ( Model, Cmd Message )
 init () =
     ( Model
         { result = Nothing
-        , menu = FloorMap
+        , menu = FloorMap { beforeSelected = Building1 }
         , floorMapSelectedBuildingNumber = Building1
-        , beforeSelectedBuildingNumber = Building1
+        , timeTableSelectedWeekday = Monday
         }
     , Cmd.none
     )
@@ -91,8 +128,10 @@ init () =
 type Message
     = RequestLineLogInUrl
     | ResponseLineLogInUrl (Result Http.Error Url.Url)
-    | ChangeMenu Menu
+    | SelectFloorMap
+    | SelectTimeTable
     | SelectFloorMapBuildingNumber BuildingNumber
+    | SelectTimeTableWeekday Weekday
 
 
 update : Message -> Model -> ( Model, Cmd Message )
@@ -118,8 +157,23 @@ update msg (Model record) =
                     , Cmd.none
                     )
 
-        ChangeMenu tab ->
-            ( Model { record | menu = tab }
+        SelectFloorMap ->
+            ( Model
+                { record
+                    | menu =
+                        FloorMap
+                            { beforeSelected = record.floorMapSelectedBuildingNumber }
+                }
+            , Cmd.none
+            )
+
+        SelectTimeTable ->
+            ( Model
+                { record
+                    | menu =
+                        TimeTable
+                            { beforeSelected = record.timeTableSelectedWeekday }
+                }
             , Cmd.none
             )
 
@@ -127,7 +181,16 @@ update msg (Model record) =
             ( Model
                 { record
                     | floorMapSelectedBuildingNumber = buildingNumber
-                    , beforeSelectedBuildingNumber = record.floorMapSelectedBuildingNumber
+                    , menu = FloorMap { beforeSelected = record.floorMapSelectedBuildingNumber }
+                }
+            , Cmd.none
+            )
+
+        SelectTimeTableWeekday weekday ->
+            ( Model
+                { record
+                    | timeTableSelectedWeekday = weekday
+                    , menu = TimeTable { beforeSelected = record.timeTableSelectedWeekday }
                 }
             , Cmd.none
             )
@@ -162,11 +225,11 @@ view (Model record) =
         ]
         [ header
         , case record.menu of
-            FloorMap ->
-                floorMap record.beforeSelectedBuildingNumber record.floorMapSelectedBuildingNumber
+            FloorMap { beforeSelected } ->
+                floorMap beforeSelected record.floorMapSelectedBuildingNumber
 
-            TimeTable ->
-                timeTable
+            TimeTable { beforeSelected } ->
+                timeTable beforeSelected record.timeTableSelectedWeekday
         , menuView record.menu
         ]
         |> S.toUnstyled
@@ -199,7 +262,12 @@ floorMap beforeSelected buildingNumber =
 
 buildingNumberTab : BuildingNumber -> BuildingNumber -> S.Html Message
 buildingNumberTab beforeSelected buildingNumber =
-    tabView beforeSelected buildingNumber SelectFloorMapBuildingNumber buildingNumberToString buildingNumberAll
+    tabView
+        beforeSelected
+        buildingNumber
+        SelectFloorMapBuildingNumber
+        buildingNumberToString
+        buildingNumberAll
 
 
 tabView : a -> a -> (a -> msg) -> (a -> String) -> List a -> S.Html msg
@@ -316,11 +384,24 @@ tabItem selected messageFunction textFunction index element =
             [ S.text (textFunction element) ]
 
 
-timeTable : S.Html Message
-timeTable =
+timeTable : Weekday -> Weekday -> S.Html Message
+timeTable beforeSelected selected =
     S.div
-        []
-        [ S.text "時間割表" ]
+        [ A.css [ displayGrid, gridCellHeightList [ "48px", "1fr" ] ]
+        ]
+        [ weekdayTab beforeSelected selected
+        , S.text "時間割表"
+        ]
+
+
+weekdayTab : Weekday -> Weekday -> S.Html Message
+weekdayTab beforeSelected selected =
+    tabView
+        beforeSelected
+        selected
+        SelectTimeTableWeekday
+        weekdayToString
+        weekdayAll
 
 
 menuView : Menu -> S.Html Message
@@ -332,19 +413,19 @@ menuView tab =
             [ A.css [ displayGrid, gridCellWidthList [ "1fr", "1fr" ] ] ]
             [ menuItem
                 (case tab of
-                    TimeTable ->
-                        Just (ChangeMenu FloorMap)
+                    TimeTable _ ->
+                        Just SelectFloorMap
 
-                    FloorMap ->
+                    FloorMap _ ->
                         Nothing
                 )
                 "フロアマップ"
             , menuItem
                 (case tab of
-                    FloorMap ->
-                        Just (ChangeMenu TimeTable)
+                    FloorMap _ ->
+                        Just SelectTimeTable
 
-                    TimeTable ->
+                    TimeTable _ ->
                         Nothing
                 )
                 "時間割表"
@@ -354,35 +435,40 @@ menuView tab =
 
 menuItem : Maybe message -> String -> S.Html message
 menuItem messageMaybe text =
-    S.div
-        ([ A.css
-            [ displayGrid
-            , Css.justifyContent Css.center
-            , Css.alignItems Css.center
-            , Css.color
-                (case messageMaybe of
-                    Just _ ->
-                        Css.rgb 150 150 150
+    case messageMaybe of
+        Just message ->
+            S.button
+                [ A.css
+                    [ displayGrid
+                    , Css.justifyContent Css.center
+                    , Css.alignItems Css.center
+                    , Css.color (Css.rgb 170 170 170)
+                    , userSelectNone
+                    , Css.backgroundColor themeColor
+                    , Css.border2 Css.zero Css.none
+                    , Css.fontSize (Css.rem 1)
+                    , Css.cursor Css.pointer
+                    ]
+                , Html.Styled.Events.onClick message
+                ]
+                [ S.text text ]
 
-                    Nothing ->
-                        Css.rgb 255 255 255
-                )
-            ]
-         ]
-            ++ (case messageMaybe of
-                    Just message ->
-                        [ Html.Styled.Events.onClick message ]
-
-                    Nothing ->
-                        []
-               )
-        )
-        [ S.text text ]
+        Nothing ->
+            S.div
+                [ A.css
+                    [ displayGrid
+                    , Css.justifyContent Css.center
+                    , Css.alignItems Css.center
+                    , Css.color (Css.rgb 255 255 255)
+                    , userSelectNone
+                    ]
+                ]
+                [ S.text text ]
 
 
 themeColor : Css.Color
 themeColor =
-    Css.rgb 144 62 166
+    Css.rgb 88 29 116
 
 
 displayGrid : Css.Style

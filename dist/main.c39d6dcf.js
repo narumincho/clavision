@@ -10832,14 +10832,23 @@ var $elm$core$Basics$never = function (_v0) {
 };
 var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Main$Building1 = {$: 'Building1'};
-var $author$project$Main$FloorMap = {$: 'FloorMap'};
+var $author$project$Main$FloorMap = function (a) {
+	return {$: 'FloorMap', a: a};
+};
 var $author$project$Main$Model = function (a) {
 	return {$: 'Model', a: a};
 };
+var $author$project$Main$Monday = {$: 'Monday'};
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
 		$author$project$Main$Model(
-			{beforeSelectedBuildingNumber: $author$project$Main$Building1, floorMapSelectedBuildingNumber: $author$project$Main$Building1, menu: $author$project$Main$FloorMap, result: $elm$core$Maybe$Nothing}),
+			{
+				floorMapSelectedBuildingNumber: $author$project$Main$Building1,
+				menu: $author$project$Main$FloorMap(
+					{beforeSelected: $author$project$Main$Building1}),
+				result: $elm$core$Maybe$Nothing,
+				timeTableSelectedWeekday: $author$project$Main$Monday
+			}),
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -10849,6 +10858,9 @@ var $author$project$Main$subscriptions = function (model) {
 };
 var $author$project$Main$ResponseLineLogInUrl = function (a) {
 	return {$: 'ResponseLineLogInUrl', a: a};
+};
+var $author$project$Main$TimeTable = function (a) {
+	return {$: 'TimeTable', a: a};
 };
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
@@ -11192,21 +11204,49 @@ var $author$project$Main$update = F2(
 								})),
 						$elm$core$Platform$Cmd$none);
 				}
-			case 'ChangeMenu':
-				var tab = msg.a;
+			case 'SelectFloorMap':
 				return _Utils_Tuple2(
 					$author$project$Main$Model(
 						_Utils_update(
 							record,
-							{menu: tab})),
+							{
+								menu: $author$project$Main$FloorMap(
+									{beforeSelected: record.floorMapSelectedBuildingNumber})
+							})),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'SelectTimeTable':
+				return _Utils_Tuple2(
+					$author$project$Main$Model(
+						_Utils_update(
+							record,
+							{
+								menu: $author$project$Main$TimeTable(
+									{beforeSelected: record.timeTableSelectedWeekday})
+							})),
+					$elm$core$Platform$Cmd$none);
+			case 'SelectFloorMapBuildingNumber':
 				var buildingNumber = msg.a;
 				return _Utils_Tuple2(
 					$author$project$Main$Model(
 						_Utils_update(
 							record,
-							{beforeSelectedBuildingNumber: record.floorMapSelectedBuildingNumber, floorMapSelectedBuildingNumber: buildingNumber})),
+							{
+								floorMapSelectedBuildingNumber: buildingNumber,
+								menu: $author$project$Main$FloorMap(
+									{beforeSelected: record.floorMapSelectedBuildingNumber})
+							})),
+					$elm$core$Platform$Cmd$none);
+			default:
+				var weekday = msg.a;
+				return _Utils_Tuple2(
+					$author$project$Main$Model(
+						_Utils_update(
+							record,
+							{
+								menu: $author$project$Main$TimeTable(
+									{beforeSelected: record.timeTableSelectedWeekday}),
+								timeTableSelectedWeekday: weekday
+							})),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
@@ -13225,7 +13265,7 @@ var $rtfeldman$elm_css$VirtualDom$Styled$text = function (str) {
 		$elm$virtual_dom$VirtualDom$text(str));
 };
 var $rtfeldman$elm_css$Html$Styled$text = $rtfeldman$elm_css$VirtualDom$Styled$text;
-var $author$project$Main$themeColor = A3($rtfeldman$elm_css$Css$rgb, 144, 62, 166);
+var $author$project$Main$themeColor = A3($rtfeldman$elm_css$Css$rgb, 88, 29, 116);
 var $author$project$Main$userSelectNone = A2($rtfeldman$elm_css$Css$property, 'user-select', 'none');
 var $rtfeldman$elm_css$Css$UnitlessInteger = {$: 'UnitlessInteger'};
 var $rtfeldman$elm_css$Css$zero = {length: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible, number: $rtfeldman$elm_css$Css$Structure$Compatible, numericValue: 0, outline: $rtfeldman$elm_css$Css$Structure$Compatible, unitLabel: '', units: $rtfeldman$elm_css$Css$UnitlessInteger, value: '0'};
@@ -13532,15 +13572,14 @@ var $author$project$Main$header = A2(
 		[
 			$rtfeldman$elm_css$Html$Styled$text('クラビジョン')
 		]));
-var $author$project$Main$ChangeMenu = function (a) {
-	return {$: 'ChangeMenu', a: a};
-};
-var $author$project$Main$TimeTable = {$: 'TimeTable'};
+var $author$project$Main$SelectFloorMap = {$: 'SelectFloorMap'};
+var $author$project$Main$SelectTimeTable = {$: 'SelectTimeTable'};
 var $author$project$Main$menuItem = F2(
 	function (messageMaybe, text) {
-		return A2(
-			$rtfeldman$elm_css$Html$Styled$div,
-			_Utils_ap(
+		if (messageMaybe.$ === 'Just') {
+			var message = messageMaybe.a;
+			return A2(
+				$rtfeldman$elm_css$Html$Styled$button,
 				_List_fromArray(
 					[
 						$rtfeldman$elm_css$Html$Styled$Attributes$css(
@@ -13550,30 +13589,41 @@ var $author$project$Main$menuItem = F2(
 								$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
 								$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
 								$rtfeldman$elm_css$Css$color(
-								function () {
-									if (messageMaybe.$ === 'Just') {
-										return A3($rtfeldman$elm_css$Css$rgb, 150, 150, 150);
-									} else {
-										return A3($rtfeldman$elm_css$Css$rgb, 255, 255, 255);
-									}
-								}())
+								A3($rtfeldman$elm_css$Css$rgb, 170, 170, 170)),
+								$author$project$Main$userSelectNone,
+								$rtfeldman$elm_css$Css$backgroundColor($author$project$Main$themeColor),
+								A2($rtfeldman$elm_css$Css$border2, $rtfeldman$elm_css$Css$zero, $rtfeldman$elm_css$Css$none),
+								$rtfeldman$elm_css$Css$fontSize(
+								$rtfeldman$elm_css$Css$rem(1)),
+								$rtfeldman$elm_css$Css$cursor($rtfeldman$elm_css$Css$pointer)
+							])),
+						$rtfeldman$elm_css$Html$Styled$Events$onClick(message)
+					]),
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$text(text)
+					]));
+		} else {
+			return A2(
+				$rtfeldman$elm_css$Html$Styled$div,
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$author$project$Main$displayGrid,
+								$rtfeldman$elm_css$Css$justifyContent($rtfeldman$elm_css$Css$center),
+								$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
+								$rtfeldman$elm_css$Css$color(
+								A3($rtfeldman$elm_css$Css$rgb, 255, 255, 255)),
+								$author$project$Main$userSelectNone
 							]))
 					]),
-				function () {
-					if (messageMaybe.$ === 'Just') {
-						var message = messageMaybe.a;
-						return _List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$Events$onClick(message)
-							]);
-					} else {
-						return _List_Nil;
-					}
-				}()),
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$text(text)
-				]));
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$text(text)
+					]));
+		}
 	});
 var $author$project$Main$menuView = function (tab) {
 	return A2(
@@ -13608,8 +13658,7 @@ var $author$project$Main$menuView = function (tab) {
 						$author$project$Main$menuItem,
 						function () {
 							if (tab.$ === 'TimeTable') {
-								return $elm$core$Maybe$Just(
-									$author$project$Main$ChangeMenu($author$project$Main$FloorMap));
+								return $elm$core$Maybe$Just($author$project$Main$SelectFloorMap);
 							} else {
 								return $elm$core$Maybe$Nothing;
 							}
@@ -13619,8 +13668,7 @@ var $author$project$Main$menuView = function (tab) {
 						$author$project$Main$menuItem,
 						function () {
 							if (tab.$ === 'FloorMap') {
-								return $elm$core$Maybe$Just(
-									$author$project$Main$ChangeMenu($author$project$Main$TimeTable));
+								return $elm$core$Maybe$Just($author$project$Main$SelectTimeTable);
 							} else {
 								return $elm$core$Maybe$Nothing;
 							}
@@ -13629,13 +13677,54 @@ var $author$project$Main$menuView = function (tab) {
 					]))
 			]));
 };
-var $author$project$Main$timeTable = A2(
-	$rtfeldman$elm_css$Html$Styled$div,
-	_List_Nil,
-	_List_fromArray(
-		[
-			$rtfeldman$elm_css$Html$Styled$text('時間割表')
-		]));
+var $author$project$Main$SelectTimeTableWeekday = function (a) {
+	return {$: 'SelectTimeTableWeekday', a: a};
+};
+var $author$project$Main$Friday = {$: 'Friday'};
+var $author$project$Main$Thursday = {$: 'Thursday'};
+var $author$project$Main$Tuesday = {$: 'Tuesday'};
+var $author$project$Main$Wednesday = {$: 'Wednesday'};
+var $author$project$Main$weekdayAll = _List_fromArray(
+	[$author$project$Main$Monday, $author$project$Main$Tuesday, $author$project$Main$Wednesday, $author$project$Main$Thursday, $author$project$Main$Friday]);
+var $author$project$Main$weekdayToString = function (weekday) {
+	switch (weekday.$) {
+		case 'Monday':
+			return '月';
+		case 'Tuesday':
+			return '火';
+		case 'Wednesday':
+			return '水';
+		case 'Thursday':
+			return '木';
+		default:
+			return '金';
+	}
+};
+var $author$project$Main$weekdayTab = F2(
+	function (beforeSelected, selected) {
+		return A5($author$project$Main$tabView, beforeSelected, selected, $author$project$Main$SelectTimeTableWeekday, $author$project$Main$weekdayToString, $author$project$Main$weekdayAll);
+	});
+var $author$project$Main$timeTable = F2(
+	function (beforeSelected, selected) {
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$div,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$css(
+					_List_fromArray(
+						[
+							$author$project$Main$displayGrid,
+							$author$project$Main$gridCellHeightList(
+							_List_fromArray(
+								['48px', '1fr']))
+						]))
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Main$weekdayTab, beforeSelected, selected),
+					$rtfeldman$elm_css$Html$Styled$text('時間割表')
+				]));
+	});
 var $rtfeldman$elm_css$VirtualDom$Styled$accumulateStyles = F2(
 	function (_v0, styles) {
 		var newStyles = _v0.b;
@@ -14127,9 +14216,11 @@ var $author$project$Main$view = function (_v0) {
 					function () {
 					var _v1 = record.menu;
 					if (_v1.$ === 'FloorMap') {
-						return A2($author$project$Main$floorMap, record.beforeSelectedBuildingNumber, record.floorMapSelectedBuildingNumber);
+						var beforeSelected = _v1.a.beforeSelected;
+						return A2($author$project$Main$floorMap, beforeSelected, record.floorMapSelectedBuildingNumber);
 					} else {
-						return $author$project$Main$timeTable;
+						var beforeSelected = _v1.a.beforeSelected;
+						return A2($author$project$Main$timeTable, beforeSelected, record.timeTableSelectedWeekday);
 					}
 				}(),
 					$author$project$Main$menuView(record.menu)
@@ -14138,7 +14229,7 @@ var $author$project$Main$view = function (_v0) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Message","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"}},"unions":{"Main.Message":{"args":[],"tags":{"RequestLineLogInUrl":[],"ResponseLineLogInUrl":["Result.Result Http.Error Url.Url"],"ChangeMenu":["Main.Menu"],"SelectFloorMapBuildingNumber":["Main.BuildingNumber"]}},"Main.BuildingNumber":{"args":[],"tags":{"Building1":[],"Building2":[],"Building3":[],"Building4":[],"Building5":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Main.Menu":{"args":[],"tags":{"FloorMap":[],"TimeTable":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}}}}})}});
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Message","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"}},"unions":{"Main.Message":{"args":[],"tags":{"RequestLineLogInUrl":[],"ResponseLineLogInUrl":["Result.Result Http.Error Url.Url"],"SelectFloorMap":[],"SelectTimeTable":[],"SelectFloorMapBuildingNumber":["Main.BuildingNumber"],"SelectTimeTableWeekday":["Main.Weekday"]}},"Main.BuildingNumber":{"args":[],"tags":{"Building1":[],"Building2":[],"Building3":[],"Building4":[],"Building5":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Main.Weekday":{"args":[],"tags":{"Monday":[],"Tuesday":[],"Wednesday":[],"Thursday":[],"Friday":[]}}}}})}});
 
 //////////////////// HMR BEGIN ////////////////////
 
