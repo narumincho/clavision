@@ -2,7 +2,8 @@ name: build and deploy hosting
 
 on:
   push:
-    branches: []
+    branches:
+      - master
 
 jobs:
   build-and-deploy:
@@ -13,17 +14,17 @@ jobs:
         uses: actions/checkout@master
       - name: Install npm dependencies (npm ci)
         run: npm ci
-      - name: Parcel build (npx parcel)
-        run: npx parcel build ./source/call/call.ts --out-dir ./distribution --out-file main.js;
+      - name: Parcel build (npx parcel build)
+        run: npx parcel build ./source/index.html --out-dir ./distribution
       - name: Replace service worker path
         run: >-
           sed -i -e
-          's!register("/__/serviceWorker.js!register("/serviceWorker.js!g'
+          's!register("/serviceWorker/serviceWorker.js!register("/serviceWorker.js!g'
           ./distribution/main.js
       - name: Move Service Worker
-        run: mv ./distribution/__/serviceWorker.js ./distribution/serviceWorker.js
+        run: mv ./distribution/serviceWorker/serviceWorker.js ./distribution/serviceWorker.js
       - name: Move service worker map
-        run: mv ./distribution/__/serviceWorker.js.map ./distribution/serviceWorker.js.map
+        run: mv ./distribution/serviceWorker/serviceWorker.js.map ./distribution/serviceWorker.js.map
       - name: Move Assets
         run: mv ./source/assets ./distribution/assets
       - name: deploy firebase hosting
