@@ -17,3 +17,7 @@ const app = Elm.Main.init({
 app.ports.jumpPage.subscribe(url => {
   location.href = url;
 });
+
+navigator.serviceWorker.register("./serviceWorker/serviceWorker.ts", {
+  scope: "/"
+});
