@@ -14,6 +14,8 @@ jobs:
         uses: actions/checkout@master
       - name: Install npm dependencies (npm ci)
         run: npm ci
+      - name: Make distribution Folder
+        run: mkdir ./distribution
       - name: Move index.html
         run: mv ./source/index.html ./distribution/index.html
       - name: Parcel build (npx parcel build)
