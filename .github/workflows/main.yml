@@ -14,8 +14,10 @@ jobs:
         uses: actions/checkout@master
       - name: Install npm dependencies (npm ci)
         run: npm ci
+      - name: Move index.html
+        run: mv ./source/index.html ./distribution/index.html
       - name: Parcel build (npx parcel build)
-        run: npx parcel build ./source/index.html --out-dir ./distribution
+        run: npx parcel build ./source/main.ts --out-dir ./distribution
       - name: Replace service worker path
         run: >-
           sed -i -e
