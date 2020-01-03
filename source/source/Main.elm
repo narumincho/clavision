@@ -385,11 +385,55 @@ tabItem selected messageFunction textFunction index element =
 timeTable : Weekday -> Weekday -> S.Html Message
 timeTable beforeSelected selected =
     S.div
-        [ A.css [ displayGrid, gridCellHeightList [ "48px", "1fr" ] ]
+        [ A.css [ displayGrid, gridCellHeightList [ "48px", "1fr", "96px", "1fr" ] ]
         ]
         [ weekdayTab beforeSelected selected
         , S.text "時間割表"
-        , S.button [ Html.Styled.Events.onClick RequestLineLogInUrl ] [ S.text "LINEでログイン" ]
+        , lineLogInButton
+        ]
+
+
+lineLogInButton : S.Html Message
+lineLogInButton =
+    S.button
+        [ A.css
+            [ Css.backgroundColor (Css.rgb 0 195 0)
+            , Css.border2 Css.zero Css.none
+            , Css.borderRadius (Css.px 8)
+            , Css.padding Css.zero
+            , Css.width (Css.pct 100)
+            , Css.cursor Css.pointer
+            ]
+        , Html.Styled.Events.onClick RequestLineLogInUrl
+        ]
+        [ S.div
+            [ A.css
+                [ Css.property "display" "grid"
+                , Css.property "grid-auto-flow" "column"
+                , Css.property "grid-template-columns" "max-content 1fr"
+                , Css.alignItems Css.center
+                ]
+            ]
+            [ S.img
+                [ A.src "/assets/line_icon120.png"
+                , A.href "LINEのロゴ"
+                , A.css
+                    [ Css.width (Css.px 97)
+                    , Css.height (Css.px 96)
+                    , Css.boxSizing Css.borderBox
+                    , Css.borderRight3 (Css.px 1) Css.solid (Css.rgb 0 179 0)
+                    ]
+                ]
+                []
+            , S.div
+                [ A.css
+                    [ Css.color (Css.rgb 255 255 255)
+                    , Css.padding (Css.px 8)
+                    , Css.fontSize (Css.rem 1.5)
+                    ]
+                ]
+                [ S.text "LINEでログイン" ]
+            ]
         ]
 
 
