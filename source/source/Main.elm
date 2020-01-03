@@ -218,6 +218,7 @@ view (Model record) =
         [ A.css
             [ displayGrid
             , gridCellHeightList [ "64px", "1fr", "64px" ]
+            , Css.height (Css.pct 100)
             ]
         ]
         [ header
