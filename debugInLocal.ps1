@@ -1,0 +1,1 @@
+npx.ps1 parcel clientSource/index.html --open

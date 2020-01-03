@@ -2,6 +2,7 @@ export namespace Elm {
   namespace Main {
     function init(args: {
       flags: null;
+      node: HTMLElement;
     }): {
       ports: Ports;
     };
