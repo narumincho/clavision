@@ -1,1 +1,0 @@
-npx.ps1 parcel build clientSource/index.html --out-dir static --public-url /clavision/ --no-source-maps

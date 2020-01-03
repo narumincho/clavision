@@ -1,5 +1,6 @@
 port module Main exposing (Message, Model, init, subscriptions, update, view)
 
+import Api
 import Browser
 import Css
 import Css.Animations
@@ -7,7 +8,6 @@ import Html
 import Html.Styled as S
 import Html.Styled.Attributes as A
 import Html.Styled.Events
-import Http
 import Json.Decode
 import Url
 
@@ -27,7 +27,7 @@ main =
 
 type Model
     = Model
-        { result : Maybe (Result Http.Error Url.Url)
+        { result : Maybe (Result String Url.Url)
         , menu : Menu
         , floorMapSelectedBuildingNumber : BuildingNumber
         , timeTableSelectedWeekday : Weekday
@@ -127,7 +127,7 @@ init () =
 
 type Message
     = RequestLineLogInUrl
-    | ResponseLineLogInUrl (Result Http.Error Url.Url)
+    | ResponseLineLogInUrl (Result String Url.Url)
     | SelectFloorMap
     | SelectTimeTable
     | SelectFloorMapBuildingNumber BuildingNumber
@@ -139,10 +139,7 @@ update msg (Model record) =
     case msg of
         RequestLineLogInUrl ->
             ( Model record
-            , Http.get
-                { url = "api/lineLogInUrl"
-                , expect = Http.expectJson ResponseLineLogInUrl urlDecoder
-                }
+            , Api.getLineLogInUrl ResponseLineLogInUrl
             )
 
         ResponseLineLogInUrl result ->
@@ -391,6 +388,7 @@ timeTable beforeSelected selected =
         ]
         [ weekdayTab beforeSelected selected
         , S.text "時間割表"
+        , S.button [ Html.Styled.Events.onClick RequestLineLogInUrl ] [ S.text "LINEでログイン" ]
         ]
 
 
