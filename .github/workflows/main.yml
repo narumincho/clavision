@@ -2,8 +2,7 @@ name: build and deploy hosting
 
 on:
   push:
-    branches:
-      - master
+    branches: []
 
 jobs:
   build-and-deploy:
