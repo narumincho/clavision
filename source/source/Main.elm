@@ -1,9 +1,14 @@
 port module Main exposing (Message, Model, init, subscriptions, update, view)
 
-import Api
+import Api.Mutation
+import Api.Scalar
+import Api.ScalarCodecs
 import Browser
 import Css
 import Css.Animations
+import Data
+import Graphql.Http
+import Graphql.SelectionSet
 import Html
 import Html.Styled as S
 import Html.Styled.Attributes as A
@@ -13,6 +18,11 @@ import Url
 
 
 port jumpPage : String -> Cmd msg
+
+
+apiUrl : String
+apiUrl =
+    "https://asia-northeast1-clavision.cloudfunctions.net/api"
 
 
 main : Program () Model Message
@@ -30,13 +40,13 @@ type Model
         { result : Maybe (Result String Url.Url)
         , menu : Menu
         , floorMapSelectedBuildingNumber : BuildingNumber
-        , timeTableSelectedWeekday : Weekday
+        , timeTableSelectedWeekday : Data.Weekday
         }
 
 
 type Menu
     = FloorMap { beforeSelected : BuildingNumber }
-    | TimeTable { beforeSelected : Weekday }
+    | TimeTable { beforeSelected : Data.Weekday }
 
 
 type BuildingNumber
@@ -76,50 +86,13 @@ buildingNumberToString buildingNumber =
             "5号館"
 
 
-type Weekday
-    = Monday
-    | Tuesday
-    | Wednesday
-    | Thursday
-    | Friday
-
-
-weekdayAll : List Weekday
-weekdayAll =
-    [ Monday
-    , Tuesday
-    , Wednesday
-    , Thursday
-    , Friday
-    ]
-
-
-weekdayToString : Weekday -> String
-weekdayToString weekday =
-    case weekday of
-        Monday ->
-            "月"
-
-        Tuesday ->
-            "火"
-
-        Wednesday ->
-            "水"
-
-        Thursday ->
-            "木"
-
-        Friday ->
-            "金"
-
-
 init : () -> ( Model, Cmd Message )
 init () =
     ( Model
         { result = Nothing
         , menu = FloorMap { beforeSelected = Building1 }
         , floorMapSelectedBuildingNumber = Building1
-        , timeTableSelectedWeekday = Monday
+        , timeTableSelectedWeekday = Data.Monday
         }
     , Cmd.none
     )
@@ -127,11 +100,11 @@ init () =
 
 type Message
     = RequestLineLogInUrl
-    | ResponseLineLogInUrl (Result String Url.Url)
+    | ResponseLineLogInUrl (Result (Graphql.Http.Error Api.ScalarCodecs.Url) Api.ScalarCodecs.Url)
     | SelectFloorMap
     | SelectTimeTable
     | SelectFloorMapBuildingNumber BuildingNumber
-    | SelectTimeTableWeekday Weekday
+    | SelectTimeTableWeekday Data.Weekday
 
 
 update : Message -> Model -> ( Model, Cmd Message )
@@ -139,18 +112,20 @@ update msg (Model record) =
     case msg of
         RequestLineLogInUrl ->
             ( Model record
-            , Api.getLineLogInUrl ResponseLineLogInUrl
+            , Graphql.Http.mutationRequest apiUrl
+                Api.Mutation.getLineLoginUrl
+                |> Graphql.Http.send ResponseLineLogInUrl
             )
 
         ResponseLineLogInUrl result ->
             case result of
-                Ok url ->
-                    ( Model { record | result = Just result }
-                    , jumpPage (Url.toString url)
+                Ok (Api.Scalar.Url url) ->
+                    ( Model record
+                    , jumpPage url
                     )
 
                 Err _ ->
-                    ( Model { record | result = Just result }
+                    ( Model record
                     , Cmd.none
                     )
 
@@ -382,7 +357,7 @@ tabItem selected messageFunction textFunction index element =
             [ S.text (textFunction element) ]
 
 
-timeTable : Weekday -> Weekday -> S.Html Message
+timeTable : Data.Weekday -> Data.Weekday -> S.Html Message
 timeTable beforeSelected selected =
     S.div
         [ A.css [ displayGrid, gridCellHeightList [ "48px", "1fr", "96px", "1fr" ] ]
@@ -437,14 +412,14 @@ lineLogInButton =
         ]
 
 
-weekdayTab : Weekday -> Weekday -> S.Html Message
+weekdayTab : Data.Weekday -> Data.Weekday -> S.Html Message
 weekdayTab beforeSelected selected =
     tabView
         beforeSelected
         selected
         SelectTimeTableWeekday
-        weekdayToString
-        weekdayAll
+        Data.weekdayToString
+        Data.weekdayAll
 
 
 menuView : Menu -> S.Html Message
