@@ -42,6 +42,7 @@ type Model
         , floorMapSelectedBuildingNumber : BuildingNumber
         , timeTableSelectedWeekday : Api.Enum.Week.Week
         , classDict : Maybe Data.ClassDict
+        , roomDict : Maybe Data.RoomDict
         , loginModel : LoginModel
         }
 
@@ -102,6 +103,7 @@ init accessTokenMaybe =
         , floorMapSelectedBuildingNumber = Building1
         , timeTableSelectedWeekday = Api.Enum.Week.Monday
         , classDict = Nothing
+        , roomDict = Nothing
         , loginModel =
             case accessTokenMaybe of
                 Just accessToken ->
@@ -113,6 +115,8 @@ init accessTokenMaybe =
     , Cmd.batch
         ([ Graphql.Http.queryRequest apiUrl Data.classDictQuery
             |> Graphql.Http.send ResponseClassDict
+         , Graphql.Http.queryRequest apiUrl Data.roomDictQuery
+            |> Graphql.Http.send ResponseRoomDict
          ]
             ++ (case accessTokenMaybe of
                     Just accessToken ->
@@ -131,6 +135,7 @@ type Message
     = RequestLineLogInUrl
     | ResponseLineLogInUrl (Result (Graphql.Http.Error Api.ScalarCodecs.Url) Api.ScalarCodecs.Url)
     | ResponseClassDict (Result (Graphql.Http.Error Data.ClassDict) Data.ClassDict)
+    | ResponseRoomDict (Result (Graphql.Http.Error Data.RoomDict) Data.RoomDict)
     | ResponseUser (Result (Graphql.Http.Error Data.User) Data.User)
     | SelectFloorMap
     | SelectTimeTable
@@ -164,6 +169,18 @@ update msg (Model record) =
             case result of
                 Ok classDict ->
                     ( Model { record | classDict = Just classDict }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( Model record
+                    , Cmd.none
+                    )
+
+        ResponseRoomDict result ->
+            case result of
+                Ok roomDict ->
+                    ( Model { record | roomDict = Just roomDict }
                     , Cmd.none
                     )
 

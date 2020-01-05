@@ -1,4 +1,4 @@
-module Data exposing (Class, ClassDict, ClassId, Location, RoomId, User, classDictQuery, classGet, locationGet, userGetImageUrl, userGetName, weekToString, userQuery)
+module Data exposing (Class, ClassDict, ClassId, Room, RoomDict, RoomId, User, classDictQuery, classGet, locationGet, roomDictQuery, userGetImageUrl, userGetName, userQuery, weekToString)
 
 import Api.Enum.Week
 import Api.Object
@@ -33,14 +33,12 @@ type Class
 
 
 type RoomDict
-    = RoomDict (Dict.Dict String Location)
+    = RoomDict (Dict.Dict String Room)
 
 
-type Location
-    = Location
+type Room
+    = Room
         { name : String
-        , points : List Int
-        , a : Api.Object.Class
         }
 
 
@@ -88,7 +86,7 @@ classGet (ClassId id) (ClassDict dict) =
     dict |> Dict.get id
 
 
-locationGet : RoomId -> RoomDict -> Maybe Location
+locationGet : RoomId -> RoomDict -> Maybe Room
 locationGet (RoomId id) (RoomDict dict) =
     dict |> Dict.get id
 
@@ -115,6 +113,20 @@ classDictQuery =
         )
         |> Graphql.SelectionSet.map
             (Dict.fromList >> ClassDict)
+
+
+roomDictQuery : Graphql.SelectionSet.SelectionSet RoomDict Graphql.Operation.RootQuery
+roomDictQuery =
+    Api.Query.roomAll
+        (Graphql.SelectionSet.map2
+            (\id name ->
+                ( id, Room { name = name } )
+            )
+            Api.Object.Room.id
+            Api.Object.Room.name
+        )
+        |> Graphql.SelectionSet.map
+            (Dict.fromList >> RoomDict)
 
 
 userQuery : String -> Graphql.SelectionSet.SelectionSet User Graphql.Operation.RootQuery
