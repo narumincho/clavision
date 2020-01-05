@@ -52,11 +52,13 @@ type Model
         , timeTableSelectedWeekday : Api.Enum.Week.Week
         , dictionary : Maybe Data.Dictionary
         , loginModel : LoginModel
+        , classSetSending : Maybe { weekAndTime : Data.WeekAndTime, after : Data.ClassId }
         }
 
 
 type LoginModel
     = Guest
+    | WaitLogInUrl
     | WaitUserData String
     | LoggedIn { accessToken : String, user : Data.User }
 
@@ -123,6 +125,7 @@ init accessTokenMaybe =
 
                 Nothing ->
                     Guest
+        , classSetSending = Nothing
         }
     , Cmd.batch
         ([ Graphql.Http.queryRequest apiUrl Data.dictionaryQuery
@@ -159,7 +162,7 @@ update : Message -> Model -> ( Model, Cmd Message )
 update msg (Model record) =
     case msg of
         RequestLineLogInUrl ->
-            ( Model record
+            ( Model { record | loginModel = WaitLogInUrl }
             , Graphql.Http.mutationRequest apiUrl
                 Api.Mutation.getLineLoginUrl
                 |> Graphql.Http.send ResponseLineLogInUrl
@@ -485,6 +488,12 @@ timeTableView dictionaryMaybe logInModel beforeSelected selected =
                 , lineLogInButton
                 ]
 
+        WaitLogInUrl ->
+            S.div
+                []
+                [ S.text "LINEへのURLを発行中"
+                ]
+
         WaitUserData _ ->
             S.div
                 []
@@ -513,7 +522,7 @@ lineLogInButton =
             , Css.borderRadius (Css.px 8)
             , Css.padding Css.zero
             , Css.width (Css.pct 100)
-            , Css.height (Css.px 64)
+            , Css.height (Css.px 96)
             , Css.cursor Css.pointer
             ]
         , Html.Styled.Events.onClick RequestLineLogInUrl

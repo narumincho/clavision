@@ -15,6 +15,7 @@ const flag = () => {
   if (result === null) {
     return null;
   }
+  location.hash = "";
   return result[1];
 };
 
