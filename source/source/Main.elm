@@ -1,12 +1,17 @@
 port module Main exposing (Message, Model, init, subscriptions, update, view)
 
+import Api.Enum.Week
 import Api.Mutation
+import Api.Object
+import Api.Object.Class
+import Api.Query
 import Api.Scalar
 import Api.ScalarCodecs
 import Browser
 import Css
 import Css.Animations
 import Data
+import Dict
 import Graphql.Http
 import Graphql.SelectionSet
 import Html
@@ -22,7 +27,7 @@ port jumpPage : String -> Cmd msg
 
 apiUrl : String
 apiUrl =
-    "https://asia-northeast1-clavision.cloudfunctions.net/api"
+    "https://us-central1-clavision.cloudfunctions.net/api"
 
 
 main : Program () Model Message
@@ -40,13 +45,14 @@ type Model
         { result : Maybe (Result String Url.Url)
         , menu : Menu
         , floorMapSelectedBuildingNumber : BuildingNumber
-        , timeTableSelectedWeekday : Data.Weekday
+        , timeTableSelectedWeekday : Api.Enum.Week.Week
+        , classDict : Maybe Data.ClassDict
         }
 
 
 type Menu
     = FloorMap { beforeSelected : BuildingNumber }
-    | TimeTable { beforeSelected : Data.Weekday }
+    | TimeTable { beforeSelected : Api.Enum.Week.Week }
 
 
 type BuildingNumber
@@ -92,19 +98,22 @@ init () =
         { result = Nothing
         , menu = FloorMap { beforeSelected = Building1 }
         , floorMapSelectedBuildingNumber = Building1
-        , timeTableSelectedWeekday = Data.Monday
+        , timeTableSelectedWeekday = Api.Enum.Week.Monday
+        , classDict = Nothing
         }
-    , Cmd.none
+    , Graphql.Http.queryRequest apiUrl Data.classDictFromApi
+        |> Graphql.Http.send ResponseClassDict
     )
 
 
 type Message
     = RequestLineLogInUrl
     | ResponseLineLogInUrl (Result (Graphql.Http.Error Api.ScalarCodecs.Url) Api.ScalarCodecs.Url)
+    | ResponseClassDict (Result (Graphql.Http.Error Data.ClassDict) Data.ClassDict)
     | SelectFloorMap
     | SelectTimeTable
     | SelectFloorMapBuildingNumber BuildingNumber
-    | SelectTimeTableWeekday Data.Weekday
+    | SelectTimeTableWeekday Api.Enum.Week.Week
 
 
 update : Message -> Model -> ( Model, Cmd Message )
@@ -122,6 +131,18 @@ update msg (Model record) =
                 Ok (Api.Scalar.Url url) ->
                     ( Model record
                     , jumpPage url
+                    )
+
+                Err _ ->
+                    ( Model record
+                    , Cmd.none
+                    )
+
+        ResponseClassDict result ->
+            case result of
+                Ok classDict ->
+                    ( Model { record | classDict = Just classDict }
+                    , Cmd.none
                     )
 
                 Err _ ->
@@ -357,7 +378,7 @@ tabItem selected messageFunction textFunction index element =
             [ S.text (textFunction element) ]
 
 
-timeTable : Data.Weekday -> Data.Weekday -> S.Html Message
+timeTable : Api.Enum.Week.Week -> Api.Enum.Week.Week -> S.Html Message
 timeTable beforeSelected selected =
     S.div
         [ A.css [ displayGrid, gridCellHeightList [ "48px", "1fr", "96px", "1fr" ] ]
@@ -412,14 +433,14 @@ lineLogInButton =
         ]
 
 
-weekdayTab : Data.Weekday -> Data.Weekday -> S.Html Message
+weekdayTab : Api.Enum.Week.Week -> Api.Enum.Week.Week -> S.Html Message
 weekdayTab beforeSelected selected =
     tabView
         beforeSelected
         selected
         SelectTimeTableWeekday
-        Data.weekdayToString
-        Data.weekdayAll
+        Data.weekToString
+        Api.Enum.Week.list
 
 
 menuView : Menu -> S.Html Message

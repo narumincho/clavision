@@ -24,3 +24,31 @@ import Json.Decode as Decode exposing (Decoder)
 hello : SelectionSet String RootQuery
 hello =
     Object.selectionForField "String" "hello" [] Decode.string
+
+
+type alias UserRequiredArguments =
+    { accessToken : String }
+
+
+{-| ユーザーの情報を取得する
+
+  - accessToken - アクセストークン
+
+-}
+user : UserRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet decodesTo RootQuery
+user requiredArgs object_ =
+    Object.selectionForCompositeField "user" [ Argument.required "accessToken" requiredArgs.accessToken Encode.string ] object_ identity
+
+
+{-| すべての教室のデータ
+-}
+roomAll : SelectionSet decodesTo Api.Object.Room -> SelectionSet (List decodesTo) RootQuery
+roomAll object_ =
+    Object.selectionForCompositeField "roomAll" [] object_ (identity >> Decode.list)
+
+
+{-| すべての授業のデータ
+-}
+classAll : SelectionSet decodesTo Api.Object.Class -> SelectionSet (List decodesTo) RootQuery
+classAll object_ =
+    Object.selectionForCompositeField "classAll" [] object_ (identity >> Decode.list)

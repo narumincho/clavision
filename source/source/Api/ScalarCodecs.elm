@@ -8,12 +8,17 @@ import Api.Scalar exposing (defaultCodecs)
 import Json.Decode as Decode exposing (Decoder)
 
 
+type alias FileHash =
+    Api.Scalar.FileHash
+
+
 type alias Url =
     Api.Scalar.Url
 
 
-codecs : Api.Scalar.Codecs Url
+codecs : Api.Scalar.Codecs FileHash Url
 codecs =
     Api.Scalar.defineCodecs
-        { codecUrl = defaultCodecs.codecUrl
+        { codecFileHash = defaultCodecs.codecFileHash
+        , codecUrl = defaultCodecs.codecUrl
         }

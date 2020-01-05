@@ -5,6 +5,25 @@
 module Api.Object exposing (..)
 
 
-placeholder : String
-placeholder =
-    ""
+type Class
+    = Class
+
+
+type ClassOfDay
+    = ClassOfDay
+
+
+type ClassOfWeek
+    = ClassOfWeek
+
+
+type Room
+    = Room
+
+
+type User
+    = User
+
+
+type WeekAndTime
+    = WeekAndTime

@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Scalar exposing (Codecs, Url(..), defaultCodecs, defineCodecs, unwrapCodecs, unwrapEncoder)
+module Api.Scalar exposing (Codecs, FileHash(..), Url(..), defaultCodecs, defineCodecs, unwrapCodecs, unwrapEncoder)
 
 import Graphql.Codec exposing (Codec)
 import Graphql.Internal.Builder.Object as Object
@@ -11,20 +11,29 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
 
+type FileHash
+    = FileHash String
+
+
 type Url
     = Url String
 
 
 defineCodecs :
-    { codecUrl : Codec valueUrl }
-    -> Codecs valueUrl
+    { codecFileHash : Codec valueFileHash
+    , codecUrl : Codec valueUrl
+    }
+    -> Codecs valueFileHash valueUrl
 defineCodecs definitions =
     Codecs definitions
 
 
 unwrapCodecs :
-    Codecs valueUrl
-    -> { codecUrl : Codec valueUrl }
+    Codecs valueFileHash valueUrl
+    ->
+        { codecFileHash : Codec valueFileHash
+        , codecUrl : Codec valueUrl
+        }
 unwrapCodecs (Codecs unwrappedCodecs) =
     unwrappedCodecs
 
@@ -33,17 +42,23 @@ unwrapEncoder getter (Codecs unwrappedCodecs) =
     (unwrappedCodecs |> getter |> .encoder) >> Graphql.Internal.Encode.fromJson
 
 
-type Codecs valueUrl
-    = Codecs (RawCodecs valueUrl)
+type Codecs valueFileHash valueUrl
+    = Codecs (RawCodecs valueFileHash valueUrl)
 
 
-type alias RawCodecs valueUrl =
-    { codecUrl : Codec valueUrl }
+type alias RawCodecs valueFileHash valueUrl =
+    { codecFileHash : Codec valueFileHash
+    , codecUrl : Codec valueUrl
+    }
 
 
-defaultCodecs : RawCodecs Url
+defaultCodecs : RawCodecs FileHash Url
 defaultCodecs =
-    { codecUrl =
+    { codecFileHash =
+        { encoder = \(FileHash raw) -> Encode.string raw
+        , decoder = Object.scalarDecoder |> Decode.map FileHash
+        }
+    , codecUrl =
         { encoder = \(Url raw) -> Encode.string raw
         , decoder = Object.scalarDecoder |> Decode.map Url
         }
