@@ -22,7 +22,6 @@ import Html
 import Html.Styled as S
 import Html.Styled.Attributes as A
 import Html.Styled.Events
-import Json.Decode
 import Url
 
 
@@ -52,7 +51,6 @@ type Model
         , timeTableSelectedWeekday : Api.Enum.Week.Week
         , dictionary : Maybe Data.Dictionary
         , loginModel : LoginModel
-        , classSetSending : Maybe { weekAndTime : Data.WeekAndTime, after : Data.ClassId }
         }
 
 
@@ -125,7 +123,6 @@ init accessTokenMaybe =
 
                 Nothing ->
                     Guest
-        , classSetSending = Nothing
         }
     , Cmd.batch
         ([ Graphql.Http.queryRequest apiUrl Data.dictionaryQuery
@@ -154,8 +151,8 @@ type Message
     | SelectFloorMapBuildingNumber BuildingNumber
     | SelectTimeTableWeekday Api.Enum.Week.Week
     | ToEditClass Data.WeekAndTime
-    | SetClass { weekAndTime : Data.WeekAndTime, classId : Data.ClassId }
-    | SetClassResponse (Result (Graphql.Http.Error { user : Data.User, classInTimeTable : Data.ClassOfWeek }) { user : Data.User, classId : Data.ClassId })
+    | SetClass { weekAndTime : Data.WeekAndTime, classId : Maybe Data.ClassId }
+    | SetClassResponse (Result (Graphql.Http.Error Data.WeekAndTime) Data.WeekAndTime)
 
 
 update : Message -> Model -> ( Model, Cmd Message )
@@ -259,10 +256,9 @@ update msg (Model record) =
 
         SetClass { weekAndTime, classId } ->
             case record.loginModel of
-                LoggedIn { accessToken } ->
-                    ( Model record
-                    , Cmd.none
-                    )
+                LoggedIn { user, accessToken } ->
+                    setClass weekAndTime classId user accessToken
+                        |> Tuple.mapFirst (\loginModel -> Model { record | loginModel = loginModel })
 
                 _ ->
                     ( Model record
@@ -270,22 +266,64 @@ update msg (Model record) =
                     )
 
         SetClassResponse result ->
-            ( Model record
+            case ( record.loginModel, result ) of
+                ( LoggedIn loginRecord, Ok weekAndTime ) ->
+                    ( Model
+                        { record
+                            | loginModel =
+                                LoggedIn
+                                    { loginRecord
+                                        | user =
+                                            Data.userMapTimeTableClass weekAndTime
+                                                (always
+                                                    (Data.ClassNoSending
+                                                        (loginRecord.user
+                                                            |> Data.userGetTimeTableClass
+                                                            |> Data.classOfWeekGetClassOfDay weekAndTime.week
+                                                            |> Data.classOfDayGetClassSelect weekAndTime.time
+                                                            |> Data.classSelectGetBefore
+                                                        )
+                                                    )
+                                                )
+                                                loginRecord.user
+                                    }
+                        }
+                    , Cmd.none
+                    )
+
+                ( _, _ ) ->
+                    ( Model record
+                    , Cmd.none
+                    )
+
+
+setClass : Data.WeekAndTime -> Maybe Data.ClassId -> Data.User -> String -> ( LoginModel, Cmd.Cmd Message )
+setClass weekAndTime classIdMaybe user accessToken =
+    let
+        beforeClassSelect =
+            user
+                |> Data.userGetTimeTableClass
+                |> Data.classOfWeekGetClassOfDay weekAndTime.week
+                |> Data.classOfDayGetClassSelect weekAndTime.time
+    in
+    case beforeClassSelect of
+        Data.ClassNoSending before ->
+            ( LoggedIn
+                { user =
+                    user
+                        |> Data.userMapTimeTableClass weekAndTime
+                            (always (Data.ClassSending { before = before, after = classIdMaybe }))
+                , accessToken = accessToken
+                }
             , Cmd.none
             )
 
-
-urlDecoder : Json.Decode.Decoder Url.Url
-urlDecoder =
-    Json.Decode.string
-        |> Json.Decode.andThen
-            (\string ->
-                case Url.fromString string of
-                    Just url ->
-                        Json.Decode.succeed url
-
-                    Nothing ->
-                        Json.Decode.fail "URL format error"
+        Data.ClassSending _ ->
+            ( LoggedIn
+                { user = user
+                , accessToken = accessToken
+                }
+            , Cmd.none
             )
 
 
@@ -592,7 +630,7 @@ timeTableBody dictionaryMaybe classOfDay =
     S.div
         [ A.css [ displayGrid, gap 16 ] ]
         (Api.Enum.Time.list
-            |> List.map (\time -> timeTableClass dictionaryMaybe (classOfDay |> Data.classOfDayGetClassId time) time)
+            |> List.map (\time -> timeTableClass dictionaryMaybe (classOfDay |> Data.classOfDayGetClassSelect time) time)
         )
 
 
@@ -622,7 +660,7 @@ timeTableClass dictionaryMaybe classSelect time =
         , S.div [] [ S.text (time |> Data.timeToClockTimeRange |> Data.clockTimeRangeToString) ]
         , S.div []
             (case ( dictionaryMaybe, classSelect ) of
-                ( Just dictionary, Data.ClassNoSending classId ) ->
+                ( Just dictionary, Data.ClassNoSending (Just classId) ) ->
                     case dictionary |> Data.getClass classId of
                         Just class ->
                             [ S.div [] [ S.text class.name ]
@@ -635,32 +673,56 @@ timeTableClass dictionaryMaybe classSelect time =
 
                 ( Just dictionary, Data.ClassSending { before, after } ) ->
                     [ S.text
-                        ((dictionary |> Data.getClass before |> Maybe.map .name |> Maybe.withDefault "???")
+                        (getClassName before dictionary
                             ++ "→"
-                            ++ (dictionary |> Data.getClass after |> Maybe.map .name |> Maybe.withDefault "???")
+                            ++ getClassName after dictionary
                             ++ "に変更中…"
                         )
                     ]
 
-                ( Nothing, Data.ClassNoSending classId ) ->
-                    [ S.div [] [ S.text ("id=" ++ Data.classIdToString classId) ] ]
+                ( Nothing, Data.ClassNoSending (Just classId) ) ->
+                    [ S.div []
+                        [ S.text
+                            ("id=" ++ Data.classIdToString classId)
+                        ]
+                    ]
 
                 ( Nothing, Data.ClassSending { after, before } ) ->
-                    [ S.div [] [ S.text ("id=" ++ Data.classIdToString before ++ "→" ++ Data.classIdToString after) ] ]
+                    [ S.div []
+                        [ S.text
+                            ("id="
+                                ++ getClassNameWithoutDictionary before
+                                ++ "→"
+                                ++ getClassNameWithoutDictionary after
+                            )
+                        ]
+                    ]
 
-                ( _, Data.ClassNone ) ->
+                ( _, Data.ClassNoSending Nothing ) ->
                     [ S.div [] [ S.text "なし" ] ]
             )
         ]
+
+
+getClassName : Maybe Data.ClassId -> Data.Dictionary -> String
+getClassName classIdMaybe dictionary =
+    case classIdMaybe of
+        Just classId ->
+            dictionary |> Data.getClass classId |> Maybe.map .name |> Maybe.withDefault "???"
+
+        Nothing ->
+            "なし"
+
+
+getClassNameWithoutDictionary : Maybe Data.ClassId -> String
+getClassNameWithoutDictionary =
+    Maybe.map Data.classIdToString >> Maybe.withDefault "なし"
 
 
 changeableClass : Maybe Data.Dictionary -> Data.ClassSelect -> Bool
 changeableClass dictionaryMaybe classSelect =
     case ( dictionaryMaybe, classSelect ) of
         ( Just _, Data.ClassNoSending _ ) ->
-            True
-
-        ( Just _, Data.ClassNone ) ->
             True
 
         ( _, _ ) ->
@@ -686,17 +748,19 @@ timeTableEdit dictionaryMaybe logInModel weekAndTime =
         )
 
 
-timeTableEditList : List Data.ClassData -> S.Html Data.ClassId
+timeTableEditList : List Data.ClassData -> S.Html (Maybe Data.ClassId)
 timeTableEditList classDataList =
     S.div
         []
-        (classDataList |> List.sortBy .name |> List.map timeTableEditListItem)
+        ((classDataList |> List.sortBy .name |> List.map (timeTableEditListItem >> S.map Just))
+            ++ [ S.button [ Html.Styled.Events.onClick Nothing ] [ S.text "なし" ] ]
+        )
 
 
 timeTableEditListItem : Data.ClassData -> S.Html Data.ClassId
 timeTableEditListItem classData =
     S.button
-        []
+        [ Html.Styled.Events.onClick classData.id ]
         [ S.text classData.name ]
 
 

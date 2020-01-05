@@ -10,8 +10,10 @@ module Data exposing
     , User
     , WeekAndTime
     , classIdToString
-    , classOfDayGetClassId
+    , classOfDayGetClassSelect
     , classOfWeekGetClassOfDay
+    , classSelectGetAfter
+    , classSelectGetBefore
     , clockTimeRangeToString
     , dictionaryQuery
     , getClass
@@ -21,6 +23,7 @@ module Data exposing
     , userGetImageUrl
     , userGetName
     , userGetTimeTableClass
+    , userMapTimeTableClass
     , userQuery
     , weekAndTimeToString
     , weekToString
@@ -91,7 +94,7 @@ type User
     = User
         { name : String
         , imageFileHash : String
-        , timeTableClass : ClassOfWeek
+        , classInTimeTable : ClassOfWeek
         }
 
 
@@ -128,6 +131,30 @@ classOfWeekGetClassOfDay week (ClassOfWeek record) =
             record.saturday
 
 
+classOfWeekMap : Api.Enum.Week.Week -> (ClassOfDay -> ClassOfDay) -> ClassOfWeek -> ClassOfWeek
+classOfWeekMap week function (ClassOfWeek record) =
+    ClassOfWeek
+        (case week of
+            Api.Enum.Week.Monday ->
+                { record | monday = function record.monday }
+
+            Api.Enum.Week.Tuesday ->
+                { record | tuesday = function record.tuesday }
+
+            Api.Enum.Week.Wednesday ->
+                { record | wednesday = function record.wednesday }
+
+            Api.Enum.Week.Thursday ->
+                { record | thursday = function record.thursday }
+
+            Api.Enum.Week.Friday ->
+                { record | friday = function record.friday }
+
+            Api.Enum.Week.Saturday ->
+                { record | saturday = function record.saturday }
+        )
+
+
 type ClassOfDay
     = ClassOfDay
         { class1 : ClassSelect
@@ -139,13 +166,32 @@ type ClassOfDay
 
 
 type ClassSelect
-    = ClassNone
-    | ClassNoSending ClassId
-    | ClassSending { before : ClassId, after : ClassId }
+    = ClassNoSending (Maybe ClassId)
+    | ClassSending { before : Maybe ClassId, after : Maybe ClassId }
 
 
-classOfDayGetClassId : Api.Enum.Time.Time -> ClassOfDay -> ClassSelect
-classOfDayGetClassId time (ClassOfDay record) =
+classSelectGetBefore : ClassSelect -> Maybe ClassId
+classSelectGetBefore classSelect =
+    case classSelect of
+        ClassNoSending classId ->
+            classId
+
+        ClassSending { before } ->
+            before
+
+
+classSelectGetAfter : ClassSelect -> Maybe ClassId
+classSelectGetAfter classSelect =
+    case classSelect of
+        ClassNoSending classId ->
+            classId
+
+        ClassSending { after } ->
+            after
+
+
+classOfDayGetClassSelect : Api.Enum.Time.Time -> ClassOfDay -> ClassSelect
+classOfDayGetClassSelect time (ClassOfDay record) =
     case time of
         Api.Enum.Time.Class1 ->
             record.class1
@@ -163,6 +209,27 @@ classOfDayGetClassId time (ClassOfDay record) =
             record.class5
 
 
+classOfDayMap : Api.Enum.Time.Time -> (ClassSelect -> ClassSelect) -> ClassOfDay -> ClassOfDay
+classOfDayMap time function (ClassOfDay record) =
+    ClassOfDay
+        (case time of
+            Api.Enum.Time.Class1 ->
+                { record | class1 = function record.class1 }
+
+            Api.Enum.Time.Class2 ->
+                { record | class2 = function record.class3 }
+
+            Api.Enum.Time.Class3 ->
+                { record | class3 = function record.class3 }
+
+            Api.Enum.Time.Class4 ->
+                { record | class4 = function record.class4 }
+
+            Api.Enum.Time.Class5 ->
+                { record | class5 = function record.class5 }
+        )
+
+
 userGetName : User -> String
 userGetName (User { name }) =
     name
@@ -174,8 +241,20 @@ userGetImageUrl (User { imageFileHash }) =
 
 
 userGetTimeTableClass : User -> ClassOfWeek
-userGetTimeTableClass (User { timeTableClass }) =
-    timeTableClass
+userGetTimeTableClass (User { classInTimeTable }) =
+    classInTimeTable
+
+
+userMapTimeTableClass : WeekAndTime -> (ClassSelect -> ClassSelect) -> User -> User
+userMapTimeTableClass weekAndTime function (User record) =
+    User
+        { record
+            | classInTimeTable =
+                classOfWeekMap
+                    weekAndTime.week
+                    (classOfDayMap weekAndTime.time function)
+                    record.classInTimeTable
+        }
 
 
 weekToString : Api.Enum.Week.Week -> String
@@ -384,7 +463,7 @@ userQuery accessToken =
                 User
                     { name = name
                     , imageFileHash = imageFileHash
-                    , timeTableClass = classOfWeek
+                    , classInTimeTable = classOfWeek
                     }
             )
             Api.Object.User.name
@@ -417,11 +496,11 @@ classOfDayQuery =
     Graphql.SelectionSet.map5
         (\c1 c2 c3 c4 c5 ->
             ClassOfDay
-                { class1 = c1 |> Maybe.map (ClassId >> ClassNoSending) |> Maybe.withDefault ClassNone
-                , class2 = c2 |> Maybe.map (ClassId >> ClassNoSending) |> Maybe.withDefault ClassNone
-                , class3 = c3 |> Maybe.map (ClassId >> ClassNoSending) |> Maybe.withDefault ClassNone
-                , class4 = c4 |> Maybe.map (ClassId >> ClassNoSending) |> Maybe.withDefault ClassNone
-                , class5 = c5 |> Maybe.map (ClassId >> ClassNoSending) |> Maybe.withDefault ClassNone
+                { class1 = c1 |> Maybe.map ClassId |> ClassNoSending
+                , class2 = c2 |> Maybe.map ClassId |> ClassNoSending
+                , class3 = c3 |> Maybe.map ClassId |> ClassNoSending
+                , class4 = c4 |> Maybe.map ClassId |> ClassNoSending
+                , class5 = c5 |> Maybe.map ClassId |> ClassNoSending
                 }
         )
         (Api.Object.ClassOfDay.class1 Api.Object.Class.id)
