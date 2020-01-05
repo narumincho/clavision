@@ -484,7 +484,7 @@ lineLogInButton =
             ]
             [ S.img
                 [ A.src "/assets/line_icon120.png"
-                , A.href "LINEのロゴ"
+                , A.alt "LINEのロゴ"
                 , A.css
                     [ Css.width (Css.px 97)
                     , Css.height (Css.px 96)
@@ -510,7 +510,7 @@ userView user =
     S.div
         [ A.css [ displayGrid, Css.justifyContent Css.center, Css.height (Css.px 32) ] ]
         [ S.img
-            [ A.href (Data.userGetImageUrl user)
+            [ A.src (Data.userGetImageUrl user)
             , A.alt (Data.userGetName user ++ "さんのプロフィール画像")
             , A.css
                 [ Css.borderRadius (Css.pct 50)
