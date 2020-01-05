@@ -25,7 +25,7 @@ apiUrl =
     "https://us-central1-clavision.cloudfunctions.net/api"
 
 
-main : Program () Model Message
+main : Program (Maybe String) Model Message
 main =
     Browser.element
         { init = init

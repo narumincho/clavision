@@ -9,8 +9,17 @@ document.documentElement.replaceChild(
 document.body.appendChild(elmAppElement);
 
 document.body.append(elmAppElement);
+
+const flag = () => {
+  const result = /accessToken=([^&]+)/.exec(location.hash);
+  if (result === null) {
+    return null;
+  }
+  return result[1];
+};
+
 const app = Elm.Main.init({
-  flags: null,
+  flags: flag(),
   node: elmAppElement
 });
 
