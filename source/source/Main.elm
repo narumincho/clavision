@@ -529,21 +529,43 @@ weekdayTab beforeSelected selected =
 timeTableBody : Maybe Data.Dictionary -> Data.ClassOfDay -> S.Html Message
 timeTableBody dictionaryMaybe classOfDay =
     S.div
-        []
-        [S.text "時間割表"]
+        [ A.css [ displayGrid, gap 16 ] ]
+        (Api.Enum.Time.list
+            |> List.map (\time -> timeTableClass dictionaryMaybe (classOfDay |> Data.classOfDayGetClassId time) time)
+        )
 
 
-type ClassViewData
-    = ClassNull
-    | ClassOnlyId Data.ClassId
-    | ClassFull Data.ClassData
-
-
-timeTableClass : ClassViewData -> Api.Enum.Time.Time -> S.Html Message
-timeTableClass classViewData time =
+timeTableClass : Maybe Data.Dictionary -> Maybe Data.ClassId -> Api.Enum.Time.Time -> S.Html Message
+timeTableClass dictionaryMaybe classIdMaybe time =
     S.div
-        []
-        []
+        [ A.css
+            [ displayGrid
+            , gridCellWidthList [ "32px", "1fr" ]
+            , gridCellHeightList [ "max-content", "max-content" ]
+            ]
+        ]
+        [ S.div [] [ S.text (time |> Data.timeToInt |> String.fromInt) ]
+        , S.div [] [ S.text (time |> Data.timeToClockTimeRange |> Data.clockTimeRangeToString) ]
+        , S.div []
+            (case ( dictionaryMaybe, classIdMaybe ) of
+                ( Just dictionary, Just classId ) ->
+                    case dictionary |> Data.getClass classId of
+                        Just class ->
+                            [ S.div [] [ S.text class.name ]
+                            , S.div [] [ S.text class.teacher ]
+                            , S.div [] [ S.text class.room.name ]
+                            ]
+
+                        Nothing ->
+                            [ S.div [] [ S.text "存在しない授業を登録している" ] ]
+
+                ( Nothing, Just classId ) ->
+                    [ S.div [] [ S.text ("id=" ++ Data.classIdToString classId) ] ]
+
+                ( _, Nothing ) ->
+                    [ S.div [] [ S.text "なし" ] ]
+            )
+        ]
 
 
 menuView : Menu -> S.Html Message
@@ -616,6 +638,11 @@ themeColor =
 displayGrid : Css.Style
 displayGrid =
     Css.property "display" "grid"
+
+
+gap : Int -> Css.Style
+gap number =
+    Css.property "gap" (String.fromInt number ++ "px")
 
 
 gridCellHeightList : List String -> Css.Style
