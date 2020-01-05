@@ -2,18 +2,13 @@ port module Main exposing (Message, Model, init, subscriptions, update, view)
 
 import Api.Enum.Week
 import Api.Mutation
-import Api.Object
-import Api.Object.Class
-import Api.Query
 import Api.Scalar
 import Api.ScalarCodecs
 import Browser
 import Css
 import Css.Animations
 import Data
-import Dict
 import Graphql.Http
-import Graphql.SelectionSet
 import Html
 import Html.Styled as S
 import Html.Styled.Attributes as A
@@ -47,7 +42,14 @@ type Model
         , floorMapSelectedBuildingNumber : BuildingNumber
         , timeTableSelectedWeekday : Api.Enum.Week.Week
         , classDict : Maybe Data.ClassDict
+        , loginModel : LoginModel
         }
+
+
+type LoginModel
+    = Guest
+    | WaitUserData String
+    | LoggedIn { accessToken : String, user : Data.User }
 
 
 type Menu
@@ -92,17 +94,36 @@ buildingNumberToString buildingNumber =
             "5号館"
 
 
-init : () -> ( Model, Cmd Message )
-init () =
+init : Maybe String -> ( Model, Cmd Message )
+init accessTokenMaybe =
     ( Model
         { result = Nothing
         , menu = FloorMap { beforeSelected = Building1 }
         , floorMapSelectedBuildingNumber = Building1
         , timeTableSelectedWeekday = Api.Enum.Week.Monday
         , classDict = Nothing
+        , loginModel =
+            case accessTokenMaybe of
+                Just accessToken ->
+                    WaitUserData accessToken
+
+                Nothing ->
+                    Guest
         }
-    , Graphql.Http.queryRequest apiUrl Data.classDictFromApi
-        |> Graphql.Http.send ResponseClassDict
+    , Cmd.batch
+        ([ Graphql.Http.queryRequest apiUrl Data.classDictQuery
+            |> Graphql.Http.send ResponseClassDict
+         ]
+            ++ (case accessTokenMaybe of
+                    Just accessToken ->
+                        [ Graphql.Http.queryRequest apiUrl (Data.userQuery accessToken)
+                            |> Graphql.Http.send ResponseUser
+                        ]
+
+                    Nothing ->
+                        []
+               )
+        )
     )
 
 
@@ -110,6 +131,7 @@ type Message
     = RequestLineLogInUrl
     | ResponseLineLogInUrl (Result (Graphql.Http.Error Api.ScalarCodecs.Url) Api.ScalarCodecs.Url)
     | ResponseClassDict (Result (Graphql.Http.Error Data.ClassDict) Data.ClassDict)
+    | ResponseUser (Result (Graphql.Http.Error Data.User) Data.User)
     | SelectFloorMap
     | SelectTimeTable
     | SelectFloorMapBuildingNumber BuildingNumber
@@ -146,6 +168,25 @@ update msg (Model record) =
                     )
 
                 Err _ ->
+                    ( Model record
+                    , Cmd.none
+                    )
+
+        ResponseUser result ->
+            case ( result, record.loginModel ) of
+                ( Ok user, WaitUserData accessToken ) ->
+                    ( Model
+                        { record
+                            | loginModel =
+                                LoggedIn
+                                    { accessToken = accessToken
+                                    , user = user
+                                    }
+                        }
+                    , Cmd.none
+                    )
+
+                ( _, _ ) ->
                     ( Model record
                     , Cmd.none
                     )
@@ -223,7 +264,7 @@ view (Model record) =
                 floorMap beforeSelected record.floorMapSelectedBuildingNumber
 
             TimeTable { beforeSelected } ->
-                timeTable beforeSelected record.timeTableSelectedWeekday
+                timeTable record.loginModel beforeSelected record.timeTableSelectedWeekday
         , menuView record.menu
         ]
         |> S.toUnstyled
@@ -378,15 +419,28 @@ tabItem selected messageFunction textFunction index element =
             [ S.text (textFunction element) ]
 
 
-timeTable : Api.Enum.Week.Week -> Api.Enum.Week.Week -> S.Html Message
-timeTable beforeSelected selected =
-    S.div
-        [ A.css [ displayGrid, gridCellHeightList [ "48px", "1fr", "96px", "1fr" ] ]
-        ]
-        [ weekdayTab beforeSelected selected
-        , S.text "時間割表"
-        , lineLogInButton
-        ]
+timeTable : LoginModel -> Api.Enum.Week.Week -> Api.Enum.Week.Week -> S.Html Message
+timeTable logInModel beforeSelected selected =
+    case logInModel of
+        Guest ->
+            S.div
+                []
+                [ S.text "時間割表を使うにはLINEでログインが必要です"
+                , lineLogInButton
+                ]
+
+        WaitUserData _ ->
+            S.div
+                []
+                [ S.text "ユーザーの情報を取得中…" ]
+
+        LoggedIn { user } ->
+            S.div
+                [ A.css [ displayGrid, gridCellHeightList [ "32px", "48px", "1fr" ] ]
+                ]
+                [ userView user
+                , weekdayTab beforeSelected selected
+                ]
 
 
 lineLogInButton : S.Html Message
@@ -398,6 +452,7 @@ lineLogInButton =
             , Css.borderRadius (Css.px 8)
             , Css.padding Css.zero
             , Css.width (Css.pct 100)
+            , Css.height (Css.px 64)
             , Css.cursor Css.pointer
             ]
         , Html.Styled.Events.onClick RequestLineLogInUrl
@@ -430,6 +485,25 @@ lineLogInButton =
                 ]
                 [ S.text "LINEでログイン" ]
             ]
+        ]
+
+
+userView : Data.User -> S.Html message
+userView user =
+    S.div
+        [ A.css [ displayGrid, Css.justifyContent Css.center, Css.height (Css.px 32) ] ]
+        [ S.img
+            [ A.href (Data.userGetImageUrl user)
+            , A.alt (Data.userGetName user ++ "さんのプロフィール画像")
+            , A.css
+                [ Css.borderRadius (Css.pct 50)
+                , Css.property "object-fit" "cover"
+                , Css.width (Css.px 32)
+                , Css.height (Css.px 32)
+                ]
+            ]
+            []
+        , S.text (Data.userGetName user)
         ]
 
 

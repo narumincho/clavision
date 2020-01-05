@@ -1,10 +1,12 @@
-module Data exposing (Class, ClassDict, ClassId, Location, RoomId, classDictFromApi, classGet, locationGet, weekToString)
+module Data exposing (Class, ClassDict, ClassId, Location, RoomId, User, classDictQuery, classGet, locationGet, userGetImageUrl, userGetName, weekToString, userQuery)
 
 import Api.Enum.Week
 import Api.Object
 import Api.Object.Class
 import Api.Object.Room
+import Api.Object.User
 import Api.Query
+import Api.Scalar
 import Dict
 import Graphql.Operation
 import Graphql.SelectionSet
@@ -42,6 +44,23 @@ type Location
         }
 
 
+type User
+    = User
+        { name : String
+        , imageFileHash : String
+        }
+
+
+userGetName : User -> String
+userGetName (User { name }) =
+    name
+
+
+userGetImageUrl : User -> String
+userGetImageUrl (User { imageFileHash }) =
+    "https://us-central1-clavision.cloudfunctions.net/file/" ++ imageFileHash
+
+
 weekToString : Api.Enum.Week.Week -> String
 weekToString weekday =
     case weekday of
@@ -74,8 +93,8 @@ locationGet (RoomId id) (RoomDict dict) =
     dict |> Dict.get id
 
 
-classDictFromApi : Graphql.SelectionSet.SelectionSet ClassDict Graphql.Operation.RootQuery
-classDictFromApi =
+classDictQuery : Graphql.SelectionSet.SelectionSet ClassDict Graphql.Operation.RootQuery
+classDictQuery =
     Api.Query.classAll
         (Graphql.SelectionSet.map4
             (\id name teacher room ->
@@ -96,3 +115,18 @@ classDictFromApi =
         )
         |> Graphql.SelectionSet.map
             (Dict.fromList >> ClassDict)
+
+
+userQuery : String -> Graphql.SelectionSet.SelectionSet User Graphql.Operation.RootQuery
+userQuery accessToken =
+    Api.Query.user { accessToken = accessToken }
+        (Graphql.SelectionSet.map2
+            (\name (Api.Scalar.FileHash imageFileHash) ->
+                User
+                    { name = name
+                    , imageFileHash = imageFileHash
+                    }
+            )
+            Api.Object.User.name
+            Api.Object.User.imageFileHash
+        )
