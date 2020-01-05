@@ -1,5 +1,6 @@
 port module Main exposing (Message, Model, init, subscriptions, update, view)
 
+import Api.Enum.Time
 import Api.Enum.Week
 import Api.Mutation
 import Api.Scalar
@@ -41,8 +42,7 @@ type Model
         , menu : Menu
         , floorMapSelectedBuildingNumber : BuildingNumber
         , timeTableSelectedWeekday : Api.Enum.Week.Week
-        , classDict : Maybe Data.ClassDict
-        , roomDict : Maybe Data.RoomDict
+        , dictionary : Maybe Data.Dictionary
         , loginModel : LoginModel
         }
 
@@ -102,8 +102,7 @@ init accessTokenMaybe =
         , menu = FloorMap { beforeSelected = Building1 }
         , floorMapSelectedBuildingNumber = Building1
         , timeTableSelectedWeekday = Api.Enum.Week.Monday
-        , classDict = Nothing
-        , roomDict = Nothing
+        , dictionary = Nothing
         , loginModel =
             case accessTokenMaybe of
                 Just accessToken ->
@@ -113,10 +112,8 @@ init accessTokenMaybe =
                     Guest
         }
     , Cmd.batch
-        ([ Graphql.Http.queryRequest apiUrl Data.classDictQuery
-            |> Graphql.Http.send ResponseClassDict
-         , Graphql.Http.queryRequest apiUrl Data.roomDictQuery
-            |> Graphql.Http.send ResponseRoomDict
+        ([ Graphql.Http.queryRequest apiUrl Data.dictionaryQuery
+            |> Graphql.Http.send ResponseClassDictAndRoomDict
          ]
             ++ (case accessTokenMaybe of
                     Just accessToken ->
@@ -134,8 +131,7 @@ init accessTokenMaybe =
 type Message
     = RequestLineLogInUrl
     | ResponseLineLogInUrl (Result (Graphql.Http.Error Api.ScalarCodecs.Url) Api.ScalarCodecs.Url)
-    | ResponseClassDict (Result (Graphql.Http.Error Data.ClassDict) Data.ClassDict)
-    | ResponseRoomDict (Result (Graphql.Http.Error Data.RoomDict) Data.RoomDict)
+    | ResponseClassDictAndRoomDict (Result (Graphql.Http.Error Data.Dictionary) Data.Dictionary)
     | ResponseUser (Result (Graphql.Http.Error Data.User) Data.User)
     | SelectFloorMap
     | SelectTimeTable
@@ -165,22 +161,10 @@ update msg (Model record) =
                     , Cmd.none
                     )
 
-        ResponseClassDict result ->
+        ResponseClassDictAndRoomDict result ->
             case result of
-                Ok classDict ->
-                    ( Model { record | classDict = Just classDict }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( Model record
-                    , Cmd.none
-                    )
-
-        ResponseRoomDict result ->
-            case result of
-                Ok roomDict ->
-                    ( Model { record | roomDict = Just roomDict }
+                Ok dictionary ->
+                    ( Model { record | dictionary = Just dictionary }
                     , Cmd.none
                     )
 
@@ -281,7 +265,11 @@ view (Model record) =
                 floorMap beforeSelected record.floorMapSelectedBuildingNumber
 
             TimeTable { beforeSelected } ->
-                timeTable record.loginModel beforeSelected record.timeTableSelectedWeekday
+                timeTable
+                    record.dictionary
+                    record.loginModel
+                    beforeSelected
+                    record.timeTableSelectedWeekday
         , menuView record.menu
         ]
         |> S.toUnstyled
@@ -436,8 +424,8 @@ tabItem selected messageFunction textFunction index element =
             [ S.text (textFunction element) ]
 
 
-timeTable : LoginModel -> Api.Enum.Week.Week -> Api.Enum.Week.Week -> S.Html Message
-timeTable logInModel beforeSelected selected =
+timeTable : Maybe Data.Dictionary -> LoginModel -> Api.Enum.Week.Week -> Api.Enum.Week.Week -> S.Html Message
+timeTable dictionaryMaybe logInModel beforeSelected selected =
     case logInModel of
         Guest ->
             S.div
@@ -457,6 +445,10 @@ timeTable logInModel beforeSelected selected =
                 ]
                 [ userView user
                 , weekdayTab beforeSelected selected
+                , timeTableBody dictionaryMaybe
+                    (Data.userGetTimeTableClass user
+                        |> Data.classOfWeekGetClassOfDay selected
+                    )
                 ]
 
 
@@ -508,7 +500,7 @@ lineLogInButton =
 userView : Data.User -> S.Html message
 userView user =
     S.div
-        [ A.css [ displayGrid, Css.justifyContent Css.center, Css.height (Css.px 32) ] ]
+        [ A.css [ displayGrid, Css.justifyContent Css.center, Css.height (Css.px 32), gridCellWidthList [ "32px", "1fr" ] ] ]
         [ S.img
             [ A.src (Data.userGetImageUrl user)
             , A.alt (Data.userGetName user ++ "さんのプロフィール画像")
@@ -532,6 +524,26 @@ weekdayTab beforeSelected selected =
         SelectTimeTableWeekday
         Data.weekToString
         Api.Enum.Week.list
+
+
+timeTableBody : Maybe Data.Dictionary -> Data.ClassOfDay -> S.Html Message
+timeTableBody dictionaryMaybe classOfDay =
+    S.div
+        []
+        [S.text "時間割表"]
+
+
+type ClassViewData
+    = ClassNull
+    | ClassOnlyId Data.ClassId
+    | ClassFull Data.ClassData
+
+
+timeTableClass : ClassViewData -> Api.Enum.Time.Time -> S.Html Message
+timeTableClass classViewData time =
+    S.div
+        []
+        []
 
 
 menuView : Menu -> S.Html Message
