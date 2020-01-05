@@ -23,13 +23,13 @@ import Json.Decode as Decode
 
 {-| 曜日
 -}
-week : SelectionSet (Maybe Api.Enum.Week.Week) Api.Object.WeekAndTime
+week : SelectionSet Api.Enum.Week.Week Api.Object.WeekAndTime
 week =
-    Object.selectionForField "(Maybe Enum.Week.Week)" "week" [] (Api.Enum.Week.decoder |> Decode.nullable)
+    Object.selectionForField "Enum.Week.Week" "week" [] Api.Enum.Week.decoder
 
 
 {-| 時限
 -}
-time : SelectionSet (Maybe Api.Enum.Time.Time) Api.Object.WeekAndTime
+time : SelectionSet Api.Enum.Time.Time Api.Object.WeekAndTime
 time =
-    Object.selectionForField "(Maybe Enum.Time.Time)" "time" [] (Api.Enum.Time.decoder |> Decode.nullable)
+    Object.selectionForField "Enum.Time.Time" "time" [] Api.Enum.Time.decoder

@@ -1,5 +1,13 @@
 port module Main exposing (Message, Model, init, subscriptions, update, view)
 
+{-
+
+   Update Api
+
+   npx elm-graphql https://us-central1-clavision.cloudfunctions.net/api --base Api --output source/source
+
+-}
+
 import Api.Enum.Time
 import Api.Enum.Week
 import Api.Mutation
@@ -55,7 +63,12 @@ type LoginModel
 
 type Menu
     = FloorMap { beforeSelected : BuildingNumber }
-    | TimeTable { beforeSelected : Api.Enum.Week.Week }
+    | TimeTable TimeTableModel
+
+
+type TimeTableModel
+    = TimeTableView { beforeSelected : Api.Enum.Week.Week }
+    | TimeTableEdit Data.WeekAndTime
 
 
 type BuildingNumber
@@ -137,6 +150,9 @@ type Message
     | SelectTimeTable
     | SelectFloorMapBuildingNumber BuildingNumber
     | SelectTimeTableWeekday Api.Enum.Week.Week
+    | ToEditClass Data.WeekAndTime
+    | SetClass { weekAndTime : Data.WeekAndTime, classId : Data.ClassId }
+    | SetClassResponse (Result (Graphql.Http.Error { user : Data.User, classInTimeTable : Data.ClassOfWeek }) { user : Data.User, classId : Data.ClassId })
 
 
 update : Message -> Model -> ( Model, Cmd Message )
@@ -207,7 +223,7 @@ update msg (Model record) =
                 { record
                     | menu =
                         TimeTable
-                            { beforeSelected = record.timeTableSelectedWeekday }
+                            (TimeTableView { beforeSelected = record.timeTableSelectedWeekday })
                 }
             , Cmd.none
             )
@@ -225,8 +241,33 @@ update msg (Model record) =
             ( Model
                 { record
                     | timeTableSelectedWeekday = weekday
-                    , menu = TimeTable { beforeSelected = record.timeTableSelectedWeekday }
+                    , menu = TimeTable (TimeTableView { beforeSelected = record.timeTableSelectedWeekday })
                 }
+            , Cmd.none
+            )
+
+        ToEditClass weekAndTime ->
+            ( Model
+                { record
+                    | menu = TimeTable (TimeTableEdit weekAndTime)
+                }
+            , Cmd.none
+            )
+
+        SetClass { weekAndTime, classId } ->
+            case record.loginModel of
+                LoggedIn { accessToken } ->
+                    ( Model record
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( Model record
+                    , Cmd.none
+                    )
+
+        SetClassResponse result ->
+            ( Model record
             , Cmd.none
             )
 
@@ -255,23 +296,33 @@ view (Model record) =
     S.div
         [ A.css
             [ displayGrid
-            , gridCellHeightList [ "64px", "1fr", "64px" ]
+            , gridCellHeightList [ "64px", "1fr", "max-content" ]
             , Css.height (Css.pct 100)
             ]
         ]
-        [ header
-        , case record.menu of
-            FloorMap { beforeSelected } ->
-                floorMap beforeSelected record.floorMapSelectedBuildingNumber
+        (header
+            :: (case record.menu of
+                    FloorMap { beforeSelected } ->
+                        [ floorMap beforeSelected record.floorMapSelectedBuildingNumber
+                        , menuView record.menu
+                        ]
 
-            TimeTable { beforeSelected } ->
-                timeTable
-                    record.dictionary
-                    record.loginModel
-                    beforeSelected
-                    record.timeTableSelectedWeekday
-        , menuView record.menu
-        ]
+                    TimeTable (TimeTableView { beforeSelected }) ->
+                        [ timeTableView
+                            record.dictionary
+                            record.loginModel
+                            beforeSelected
+                            record.timeTableSelectedWeekday
+                        ]
+
+                    TimeTable (TimeTableEdit weekAndTime) ->
+                        [ timeTableEdit
+                            record.dictionary
+                            record.loginModel
+                            weekAndTime
+                        ]
+               )
+        )
         |> S.toUnstyled
 
 
@@ -424,8 +475,8 @@ tabItem selected messageFunction textFunction index element =
             [ S.text (textFunction element) ]
 
 
-timeTable : Maybe Data.Dictionary -> LoginModel -> Api.Enum.Week.Week -> Api.Enum.Week.Week -> S.Html Message
-timeTable dictionaryMaybe logInModel beforeSelected selected =
+timeTableView : Maybe Data.Dictionary -> LoginModel -> Api.Enum.Week.Week -> Api.Enum.Week.Week -> S.Html Message
+timeTableView dictionaryMaybe logInModel beforeSelected selected =
     case logInModel of
         Guest ->
             S.div
@@ -449,6 +500,7 @@ timeTable dictionaryMaybe logInModel beforeSelected selected =
                     (Data.userGetTimeTableClass user
                         |> Data.classOfWeekGetClassOfDay selected
                     )
+                    |> S.map (\e -> ToEditClass { week = selected, time = e })
                 ]
 
 
@@ -526,7 +578,7 @@ weekdayTab beforeSelected selected =
         Api.Enum.Week.list
 
 
-timeTableBody : Maybe Data.Dictionary -> Data.ClassOfDay -> S.Html Message
+timeTableBody : Maybe Data.Dictionary -> Data.ClassOfDay -> S.Html Api.Enum.Time.Time
 timeTableBody dictionaryMaybe classOfDay =
     S.div
         [ A.css [ displayGrid, gap 16 ] ]
@@ -535,20 +587,33 @@ timeTableBody dictionaryMaybe classOfDay =
         )
 
 
-timeTableClass : Maybe Data.Dictionary -> Maybe Data.ClassId -> Api.Enum.Time.Time -> S.Html Message
-timeTableClass dictionaryMaybe classIdMaybe time =
-    S.div
-        [ A.css
+timeTableClass : Maybe Data.Dictionary -> Data.ClassSelect -> Api.Enum.Time.Time -> S.Html Api.Enum.Time.Time
+timeTableClass dictionaryMaybe classSelect time =
+    (if changeableClass dictionaryMaybe classSelect then
+        S.button
+
+     else
+        S.div
+    )
+        ([ A.css
             [ displayGrid
             , gridCellWidthList [ "32px", "1fr" ]
             , gridCellHeightList [ "max-content", "max-content" ]
+            , Css.fontSize (Css.rem 1)
             ]
-        ]
+         ]
+            ++ (if changeableClass dictionaryMaybe classSelect then
+                    [ Html.Styled.Events.onClick time ]
+
+                else
+                    []
+               )
+        )
         [ S.div [] [ S.text (time |> Data.timeToInt |> String.fromInt) ]
         , S.div [] [ S.text (time |> Data.timeToClockTimeRange |> Data.clockTimeRangeToString) ]
         , S.div []
-            (case ( dictionaryMaybe, classIdMaybe ) of
-                ( Just dictionary, Just classId ) ->
+            (case ( dictionaryMaybe, classSelect ) of
+                ( Just dictionary, Data.ClassNoSending classId ) ->
                     case dictionary |> Data.getClass classId of
                         Just class ->
                             [ S.div [] [ S.text class.name ]
@@ -559,19 +624,77 @@ timeTableClass dictionaryMaybe classIdMaybe time =
                         Nothing ->
                             [ S.div [] [ S.text "存在しない授業を登録している" ] ]
 
-                ( Nothing, Just classId ) ->
+                ( Just dictionary, Data.ClassSending { before, after } ) ->
+                    [ S.text
+                        ((dictionary |> Data.getClass before |> Maybe.map .name |> Maybe.withDefault "???")
+                            ++ "→"
+                            ++ (dictionary |> Data.getClass after |> Maybe.map .name |> Maybe.withDefault "???")
+                            ++ "に変更中…"
+                        )
+                    ]
+
+                ( Nothing, Data.ClassNoSending classId ) ->
                     [ S.div [] [ S.text ("id=" ++ Data.classIdToString classId) ] ]
 
-                ( _, Nothing ) ->
+                ( Nothing, Data.ClassSending { after, before } ) ->
+                    [ S.div [] [ S.text ("id=" ++ Data.classIdToString before ++ "→" ++ Data.classIdToString after) ] ]
+
+                ( _, Data.ClassNone ) ->
                     [ S.div [] [ S.text "なし" ] ]
             )
         ]
 
 
+changeableClass : Maybe Data.Dictionary -> Data.ClassSelect -> Bool
+changeableClass dictionaryMaybe classSelect =
+    case ( dictionaryMaybe, classSelect ) of
+        ( Just _, Data.ClassNoSending _ ) ->
+            True
+
+        ( Just _, Data.ClassNone ) ->
+            True
+
+        ( _, _ ) ->
+            False
+
+
+timeTableEdit : Maybe Data.Dictionary -> LoginModel -> Data.WeekAndTime -> S.Html Message
+timeTableEdit dictionaryMaybe logInModel weekAndTime =
+    S.div
+        []
+        (case ( logInModel, dictionaryMaybe ) of
+            ( LoggedIn { user }, Just dictionary ) ->
+                [ S.text (Data.weekAndTimeToString weekAndTime ++ "にどの授業を取りますか?")
+                , timeTableEditList (dictionary |> Data.getClassFromWeekAndTime weekAndTime)
+                    |> S.map (\classId -> SetClass { weekAndTime = weekAndTime, classId = classId })
+                ]
+
+            ( _, Nothing ) ->
+                [ S.text "授業情報を読み込み中…" ]
+
+            _ ->
+                [ S.text "ログインしていないと、時間割表を編集することができません" ]
+        )
+
+
+timeTableEditList : List Data.ClassData -> S.Html Data.ClassId
+timeTableEditList classDataList =
+    S.div
+        []
+        (classDataList |> List.sortBy .name |> List.map timeTableEditListItem)
+
+
+timeTableEditListItem : Data.ClassData -> S.Html Data.ClassId
+timeTableEditListItem classData =
+    S.button
+        []
+        [ S.text classData.name ]
+
+
 menuView : Menu -> S.Html Message
 menuView tab =
     S.div
-        [ A.css [ Css.backgroundColor themeColor, displayGrid ]
+        [ A.css [ Css.backgroundColor themeColor, displayGrid, Css.height (Css.px 64) ]
         ]
         [ S.div
             [ A.css [ displayGrid, gridCellWidthList [ "1fr", "1fr" ] ] ]
