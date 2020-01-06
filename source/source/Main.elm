@@ -384,6 +384,7 @@ view (Model record) =
             , gridCellHeightList [ "64px", "1fr", "max-content" ]
             , Css.height (Css.pct 100)
             , Css.overflowWrap Css.breakWord
+            , Css.overflow Css.auto
             ]
         ]
         (header
@@ -455,7 +456,9 @@ floorList buildingNumber =
         ]
         ((case buildingNumber of
             Building1 ->
-                [ ( 1, Data.building1_1 ) ]
+                [ ( 1, Data.building1_1 )
+                , ( 2, Data.building1_2 )
+                ]
 
             _ ->
                 []
@@ -706,7 +709,7 @@ weekdayTab beforeSelected selected =
 timeTableBody : Maybe Data.Dictionary -> Data.ClassOfDay -> S.Html Api.Enum.Time.Time
 timeTableBody dictionaryMaybe classOfDay =
     S.div
-        [ A.css [ displayGrid ] ]
+        [ A.css [ displayGrid, Css.overflow Css.auto ] ]
         (Api.Enum.Time.list
             |> List.map (\time -> timeTableClass dictionaryMaybe (classOfDay |> Data.classOfDayGetClassSelect time) time)
         )

@@ -12,6 +12,7 @@ module Data exposing
     , User
     , WeekAndTime
     , building1_1
+    , building1_2
     , classIdToString
     , classOfDayGetClassSelect
     , classOfWeekGetClassOfDay
@@ -432,8 +433,37 @@ building1_1 =
         , { points = [ ( 588, 918 ), ( 588, 998 ), ( 655, 998 ), ( 655, 918 ), ( 588, 918 ) ]
           , fill = True
           }
+        , { points = [ ( 577, 824 ), ( 655, 824 ), ( 655, 878 ), ( 577, 878 ), ( 577, 824 ) ]
+          , fill = True
+          }
         ]
     , size = { width = 669, height = 1014 }
+    }
+
+
+building1_2 : FloorMap
+building1_2 =
+    { areaList =
+        [ { points =
+                [ ( 0, 88 ), ( 13, 88 ), ( 13, 474 ), ( 0, 474 ) ]
+          , fill = False
+          }
+        , { points =
+                [ ( 0, 522 ), ( 13, 522 ), ( 13, 1004 ), ( 68, 1004 ), ( 68, 1123 ) ]
+          , fill = False
+          }
+        , { points =
+                [ ( 132, 1123 ), ( 110, 1004 ), ( 270, 1004 ), ( 270, 1113 ), ( 590, 1113 ), ( 590, 1003 ), ( 654, 1003 ), ( 654, 15 ), ( 78, 15 ), ( 78, 0 ) ]
+          , fill = False
+          }
+        , { points = [ ( 29, 0 ), ( 29, 15 ), ( 13, 15 ), ( 13, 43 ), ( 0, 43 ) ]
+          , fill = False
+          }
+        , { points = [ ( 293, 15 ), ( 293, 277 ), ( 388, 277 ), ( 388, 246 ), ( 654, 246 ), ( 654, 15 ), ( 293, 15 ) ]
+          , fill = True
+          }
+        ]
+    , size = { width = 666, height = 1123 }
     }
 
 
