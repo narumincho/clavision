@@ -18,11 +18,12 @@ import Css
 import Css.Animations
 import Data
 import Graphql.Http
-import Graphql.SelectionSet
 import Html
 import Html.Styled as S
 import Html.Styled.Attributes as A
 import Html.Styled.Events
+import Svg.Styled
+import Svg.Styled.Attributes
 import Url
 
 
@@ -154,6 +155,7 @@ type Message
     | ToEditClass Data.WeekAndTime
     | SetClass { weekAndTime : Data.WeekAndTime, classId : Maybe Data.ClassId }
     | ResponseSetClass { weekAndTime : Data.WeekAndTime, result : Result (Graphql.Http.Error ()) () }
+    | BackToTimeTableView
 
 
 update : Message -> Model -> ( Model, Cmd Message )
@@ -295,6 +297,16 @@ update msg (Model record) =
                     , Cmd.none
                     )
 
+        BackToTimeTableView ->
+            ( Model
+                { record
+                    | menu =
+                        TimeTable
+                            (TimeTableView { beforeSelected = record.timeTableSelectedWeekday })
+                }
+            , Cmd.none
+            )
+
 
 setClass : Data.WeekAndTime -> Maybe Data.ClassId -> Data.User -> String -> { logInModel : LoginModel, timeTableModel : TimeTableModel, cmd : Cmd.Cmd Message }
 setClass weekAndTime classIdMaybe user accessToken =
@@ -371,6 +383,7 @@ view (Model record) =
             [ displayGrid
             , gridCellHeightList [ "64px", "1fr", "max-content" ]
             , Css.height (Css.pct 100)
+            , Css.overflowWrap Css.breakWord
             ]
         ]
         (header
@@ -418,11 +431,34 @@ header =
 floorMap : BuildingNumber -> BuildingNumber -> S.Html Message
 floorMap beforeSelected buildingNumber =
     S.div
-        [ A.css [ displayGrid, gridCellHeightList [ "48px", "1fr" ] ]
+        [ A.css
+            [ displayGrid
+            , gridCellHeightList [ "48px", "1fr" ]
+            , gridCellWidthList [ "1fr" ]
+            ]
         ]
         [ buildingNumberTab beforeSelected buildingNumber
-        , S.text (buildingNumberToString buildingNumber)
+        , floorList buildingNumber
         ]
+
+
+floorList : BuildingNumber -> S.Html Message
+floorList buildingNumber =
+    S.div
+        [ A.css
+            [ Css.overflowX Css.auto
+            , gridCell { x = 0, y = 1, width = 1, height = 1 }
+            ]
+        ]
+        ((case buildingNumber of
+            Building1 ->
+                [ Data.building1_1 ]
+
+            _ ->
+                []
+         )
+            |> List.map floorToSvg
+        )
 
 
 buildingNumberTab : BuildingNumber -> BuildingNumber -> S.Html Message
@@ -472,8 +508,7 @@ tabSelectedBar count beforeSelected index =
         [ A.css
             [ Css.position Css.relative
             , Css.pointerEvents Css.none
-            , gridCellX 0 count
-            , gridCellY 0 1
+            , gridCell { x = 0, y = 0, width = count, height = 1 }
             , Css.alignSelf Css.end
             , Css.height (Css.px 4)
             ]
@@ -516,8 +551,7 @@ tabItem selected messageFunction textFunction index element =
                 , Css.color themeColor
                 , Css.backgroundColor (Css.rgb 244 244 244)
                 , userSelectNone
-                , gridCellX index 1
-                , gridCellY 0 1
+                , gridCell { x = index, y = 0, width = 1, height = 1 }
                 , Css.fontWeight Css.bold
                 , Css.border2 Css.zero Css.none
                 , Css.fontSize (Css.rem 1)
@@ -535,8 +569,7 @@ tabItem selected messageFunction textFunction index element =
                 , Css.color (Css.rgb 85 85 85)
                 , Css.backgroundColor (Css.rgb 244 244 244)
                 , userSelectNone
-                , gridCellX index 1
-                , gridCellY 0 1
+                , gridCell { x = index, y = 0, width = 1, height = 1 }
                 , Css.cursor Css.pointer
                 , Css.hover
                     [ Css.backgroundColor (Css.rgb 221 221 221)
@@ -681,6 +714,7 @@ timeTableClass dictionaryMaybe classSelect time =
             , Css.border2 Css.zero Css.none
             , Css.cursor Css.pointer
             , Css.padding (Css.px 16)
+            , Css.textAlign Css.left
             ]
         , if changeableClass dictionaryMaybe classSelect then
             Html.Styled.Events.onClick time
@@ -698,17 +732,16 @@ timeTableClass dictionaryMaybe classSelect time =
             ]
             [ S.div
                 [ A.css
-                    [ gridCellX 0 1
-                    , gridCellY 0 2
+                    [ gridCell { x = 0, y = 0, width = 1, height = 2 }
                     , Css.fontSize (Css.rem 3)
                     ]
                 ]
                 [ S.text (time |> Data.timeToInt |> String.fromInt) ]
             , S.div
-                [ A.css [ gridCellX 1 1, gridCellY 0 1 ] ]
+                [ A.css [ gridCell { x = 1, y = 0, width = 1, height = 1 } ] ]
                 [ S.text (time |> Data.timeToClockTimeRange |> Data.clockTimeRangeToString) ]
             , S.div
-                [ A.css [ gridCellX 1 1, gridCellY 1 1 ]
+                [ A.css [ gridCell { x = 1, y = 1, width = 1, height = 1 } ]
                 ]
                 (case ( dictionaryMaybe, classSelect ) of
                     ( Just dictionary, Data.ClassNoSending (Just classId) ) ->
@@ -787,7 +820,18 @@ timeTableEdit dictionaryMaybe logInModel weekAndTime =
         []
         (case ( logInModel, dictionaryMaybe ) of
             ( LoggedIn { user }, Just dictionary ) ->
-                [ S.text (Data.weekAndTimeToString weekAndTime ++ "にどの授業を取りますか?")
+                [ S.div
+                    []
+                    [ S.button
+                        [ A.css
+                            [ Css.padding (Css.px 8)
+                            , Css.fontSize (Css.rem 1.5)
+                            ]
+                        , Html.Styled.Events.onClick BackToTimeTableView
+                        ]
+                        [ S.text "←" ]
+                    , S.text (Data.weekAndTimeToString weekAndTime ++ "にどの授業を取りますか?")
+                    ]
                 , timeTableEditList (dictionary |> Data.getClassFromWeekAndTime weekAndTime)
                     |> S.map (\classId -> SetClass { weekAndTime = weekAndTime, classId = classId })
                 ]
@@ -902,6 +946,40 @@ menuItem messageMaybe text =
                 [ S.text text ]
 
 
+floorToSvg : Data.Floor -> Svg.Styled.Svg message
+floorToSvg floor =
+    Svg.Styled.svg
+        [ Svg.Styled.Attributes.viewBox
+            ("0 0 "
+                ++ String.fromInt floor.size.width
+                ++ " "
+                ++ String.fromInt floor.size.height
+            )
+        ]
+        (floor.areaList |> List.map areaToSvg)
+
+
+areaToSvg : Data.Area -> Svg.Styled.Svg message
+areaToSvg area =
+    Svg.Styled.polyline
+        [ Svg.Styled.Attributes.points
+            (area.points
+                |> List.concatMap (\( a, b ) -> [ a, b ])
+                |> List.map String.fromInt
+                |> String.join " "
+            )
+        , Svg.Styled.Attributes.fill
+            (if area.fill then
+                "rgb(223, 223, 223)"
+
+             else
+                "none"
+            )
+        , Svg.Styled.Attributes.stroke "black"
+        ]
+        []
+
+
 themeColor : Css.Color
 themeColor =
     Css.rgb 88 29 116
@@ -927,18 +1005,14 @@ gridCellWidthList list =
     Css.property "grid-template-columns" (list |> String.join " ")
 
 
-gridCellY : Int -> Int -> Css.Style
-gridCellY y height =
-    Css.property
-        "grid-row"
-        (String.fromInt (1 + y) ++ " / " ++ String.fromInt (1 + y + height))
-
-
-gridCellX : Int -> Int -> Css.Style
-gridCellX x width =
-    Css.property
-        "grid-column"
-        (String.fromInt (1 + x) ++ " / " ++ String.fromInt (1 + x + width))
+gridCell : { x : Int, y : Int, width : Int, height : Int } -> Css.Style
+gridCell { x, y, width, height } =
+    Css.batch
+        [ Css.property "grid-column"
+            (String.fromInt (1 + x) ++ " / " ++ String.fromInt (1 + x + width))
+        , Css.property "grid-row"
+            (String.fromInt (1 + y) ++ " / " ++ String.fromInt (1 + y + height))
+        ]
 
 
 userSelectNone : Css.Style

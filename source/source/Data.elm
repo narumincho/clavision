@@ -1,14 +1,17 @@
 module Data exposing
-    ( ClassData
+    ( Area
+    , ClassData
     , ClassId
     , ClassOfDay
     , ClassOfWeek
     , ClassSelect(..)
     , Dictionary
+    , Floor
     , RoomData
     , RoomId
     , User
     , WeekAndTime
+    , building1_1
     , classIdToString
     , classOfDayGetClassSelect
     , classOfWeekGetClassOfDay
@@ -406,6 +409,32 @@ clockTimeToString clockTime =
     String.fromInt (Clock.getHours clockTime)
         ++ ":"
         ++ String.fromInt (Clock.getMinutes clockTime)
+
+
+type alias Area =
+    { points : List ( Int, Int )
+    , fill : Bool
+    }
+
+
+type alias Floor =
+    { areaList : List Area
+    , size : { width : Int, height : Int }
+    }
+
+
+building1_1 : Floor
+building1_1 =
+    { areaList =
+        [ { points = [ ( 11, 16 ), ( 11, 664 ), ( 32, 664 ), ( 32, 840 ), ( 11, 840 ), ( 11, 998 ), ( 157, 998 ), ( 157, 971 ), ( 255, 971 ), ( 255, 998 ), ( 655, 998 ), ( 655, 745 ), ( 638, 745 ), ( 638, 719 ), ( 655, 719 ), ( 655, 16 ), ( 11, 16 ) ]
+          , fill = False
+          }
+        , { points = [ ( 588, 918 ), ( 588, 998 ), ( 655, 998 ), ( 655, 918 ), ( 588, 918 ) ]
+          , fill = True
+          }
+        ]
+    , size = { width = 669, height = 1014 }
+    }
 
 
 dictionaryQuery : Graphql.SelectionSet.SelectionSet Dictionary Graphql.Operation.RootQuery
