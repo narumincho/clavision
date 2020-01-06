@@ -456,9 +456,7 @@ floorList buildingNumber =
         ]
         ((case buildingNumber of
             Building1 ->
-                [ ( 1, Data.building1_1 )
-                , ( 2, Data.building1_2 )
-                ]
+                Data.building1List
 
             _ ->
                 []

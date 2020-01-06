@@ -11,8 +11,7 @@ module Data exposing
     , RoomId
     , User
     , WeekAndTime
-    , building1_1
-    , building1_2
+    , building1List
     , classIdToString
     , classOfDayGetClassSelect
     , classOfWeekGetClassOfDay
@@ -424,6 +423,14 @@ type alias FloorMap =
     }
 
 
+building1List : List ( Int, FloorMap )
+building1List =
+    [ ( 1, building1_1 )
+    , ( 2, building1_2 )
+    , ( 4, building1_4 )
+    ]
+
+
 building1_1 : FloorMap
 building1_1 =
     { areaList =
@@ -464,6 +471,17 @@ building1_2 =
           }
         ]
     , size = { width = 666, height = 1123 }
+    }
+
+
+building1_4 : FloorMap
+building1_4 =
+    { areaList =
+        [ { points = [ ( 8, 12 ), ( 8, 766 ), ( 197, 766 ), ( 201, 819 ), ( 224, 861 ), ( 260, 887 ), ( 270, 928 ), ( 306, 973 ), ( 344, 987 ), ( 381, 987 ), ( 381, 993 ), ( 923, 993 ), ( 923, 12 ), ( 8, 12 ) ]
+          , fill = False
+          }
+        ]
+    , size = { width = 931, height = 999 }
     }
 
 
