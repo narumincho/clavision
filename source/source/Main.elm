@@ -153,7 +153,7 @@ type Message
     | SelectTimeTableWeekday Api.Enum.Week.Week
     | ToEditClass Data.WeekAndTime
     | SetClass { weekAndTime : Data.WeekAndTime, classId : Maybe Data.ClassId }
-    | ResponseSetClass (Result (Graphql.Http.Error Data.WeekAndTime) Data.WeekAndTime)
+    | ResponseSetClass { weekAndTime : Data.WeekAndTime, result : Result (Graphql.Http.Error ()) () }
 
 
 update : Message -> Model -> ( Model, Cmd Message )
@@ -275,33 +275,22 @@ update msg (Model record) =
                     , Cmd.none
                     )
 
-        ResponseSetClass result ->
-            case ( record.loginModel, result ) of
-                ( LoggedIn loginRecord, Ok weekAndTime ) ->
+        ResponseSetClass { weekAndTime, result } ->
+            case record.loginModel of
+                LoggedIn loginRecord ->
                     ( Model
                         { record
                             | loginModel =
                                 LoggedIn
                                     { loginRecord
                                         | user =
-                                            Data.userMapTimeTableClass weekAndTime
-                                                (always
-                                                    (Data.ClassNoSending
-                                                        (loginRecord.user
-                                                            |> Data.userGetTimeTableClass
-                                                            |> Data.classOfWeekGetClassOfDay weekAndTime.week
-                                                            |> Data.classOfDayGetClassSelect weekAndTime.time
-                                                            |> Data.classSelectGetBefore
-                                                        )
-                                                    )
-                                                )
-                                                loginRecord.user
+                                            setClassResponse weekAndTime result loginRecord.user
                                     }
                         }
                     , Cmd.none
                     )
 
-                ( _, _ ) ->
+                _ ->
                     ( Model record
                     , Cmd.none
                     )
@@ -331,7 +320,10 @@ setClass weekAndTime classIdMaybe user accessToken =
                 Graphql.Http.mutationRequest
                     apiUrl
                     (Data.setClassQuery accessToken weekAndTime classIdMaybe)
-                    |> Graphql.Http.send ResponseSetClass
+                    |> Graphql.Http.send
+                        (\result ->
+                            ResponseSetClass { weekAndTime = weekAndTime, result = result }
+                        )
             }
 
         Data.ClassSending _ ->
@@ -343,6 +335,28 @@ setClass weekAndTime classIdMaybe user accessToken =
             , timeTableModel = TimeTableView { beforeSelected = weekAndTime.week }
             , cmd = Cmd.none
             }
+
+
+setClassResponse : Data.WeekAndTime -> Result (Graphql.Http.Error ()) () -> Data.User -> Data.User
+setClassResponse weekAndTime result user =
+    Data.userMapTimeTableClass weekAndTime
+        (always
+            (Data.ClassNoSending
+                (user
+                    |> Data.userGetTimeTableClass
+                    |> Data.classOfWeekGetClassOfDay weekAndTime.week
+                    |> Data.classOfDayGetClassSelect weekAndTime.time
+                    |> (case result of
+                            Ok _ ->
+                                Data.classSelectGetAfter
+
+                            Err _ ->
+                                Data.classSelectGetBefore
+                       )
+                )
+            )
+        )
+        user
 
 
 subscriptions : Model -> Sub Message

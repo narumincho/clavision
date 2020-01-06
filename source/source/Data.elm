@@ -513,7 +513,7 @@ classOfDayQuery =
         (Api.Object.ClassOfDay.class5 Api.Object.Class.id)
 
 
-setClassQuery : String -> WeekAndTime -> Maybe ClassId -> Graphql.SelectionSet.SelectionSet WeekAndTime Graphql.Operation.RootMutation
+setClassQuery : String -> WeekAndTime -> Maybe ClassId -> Graphql.SelectionSet.SelectionSet () Graphql.Operation.RootMutation
 setClassQuery accessToken weekAndTime classIdMaybe =
     Api.Mutation.setClass
         (case classIdMaybe of
@@ -528,4 +528,3 @@ setClassQuery accessToken weekAndTime classIdMaybe =
         , time = weekAndTime.time
         }
         Graphql.SelectionSet.empty
-        |> Graphql.SelectionSet.map (always weekAndTime)
