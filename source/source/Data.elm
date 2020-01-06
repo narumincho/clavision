@@ -18,6 +18,7 @@ module Data exposing
     , dictionaryQuery
     , getClass
     , getClassFromWeekAndTime
+    , setClassQuery
     , timeToClockTimeRange
     , timeToInt
     , userGetImageUrl
@@ -31,6 +32,7 @@ module Data exposing
 
 import Api.Enum.Time
 import Api.Enum.Week
+import Api.Mutation
 import Api.Object
 import Api.Object.Class
 import Api.Object.ClassOfDay
@@ -43,6 +45,7 @@ import Api.Scalar
 import Clock
 import Dict
 import Graphql.Operation
+import Graphql.OptionalArgument
 import Graphql.SelectionSet
 import Time
 
@@ -508,3 +511,21 @@ classOfDayQuery =
         (Api.Object.ClassOfDay.class3 Api.Object.Class.id)
         (Api.Object.ClassOfDay.class4 Api.Object.Class.id)
         (Api.Object.ClassOfDay.class5 Api.Object.Class.id)
+
+
+setClassQuery : String -> WeekAndTime -> Maybe ClassId -> Graphql.SelectionSet.SelectionSet WeekAndTime Graphql.Operation.RootMutation
+setClassQuery accessToken weekAndTime classIdMaybe =
+    Api.Mutation.setClass
+        (case classIdMaybe of
+            Just (ClassId classId) ->
+                always { classId = Graphql.OptionalArgument.Present classId }
+
+            Nothing ->
+                identity
+        )
+        { accessToken = accessToken
+        , week = weekAndTime.week
+        , time = weekAndTime.time
+        }
+        Graphql.SelectionSet.empty
+        |> Graphql.SelectionSet.map (always weekAndTime)

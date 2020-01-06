@@ -18,6 +18,7 @@ import Css
 import Css.Animations
 import Data
 import Graphql.Http
+import Graphql.SelectionSet
 import Html
 import Html.Styled as S
 import Html.Styled.Attributes as A
@@ -152,7 +153,7 @@ type Message
     | SelectTimeTableWeekday Api.Enum.Week.Week
     | ToEditClass Data.WeekAndTime
     | SetClass { weekAndTime : Data.WeekAndTime, classId : Maybe Data.ClassId }
-    | SetClassResponse (Result (Graphql.Http.Error Data.WeekAndTime) Data.WeekAndTime)
+    | ResponseSetClass (Result (Graphql.Http.Error Data.WeekAndTime) Data.WeekAndTime)
 
 
 update : Message -> Model -> ( Model, Cmd Message )
@@ -257,15 +258,24 @@ update msg (Model record) =
         SetClass { weekAndTime, classId } ->
             case record.loginModel of
                 LoggedIn { user, accessToken } ->
-                    setClass weekAndTime classId user accessToken
-                        |> Tuple.mapFirst (\loginModel -> Model { record | loginModel = loginModel })
+                    let
+                        setClassResult =
+                            setClass weekAndTime classId user accessToken
+                    in
+                    ( Model
+                        { record
+                            | menu = TimeTable setClassResult.timeTableModel
+                            , loginModel = setClassResult.logInModel
+                        }
+                    , setClassResult.cmd
+                    )
 
                 _ ->
                     ( Model record
                     , Cmd.none
                     )
 
-        SetClassResponse result ->
+        ResponseSetClass result ->
             case ( record.loginModel, result ) of
                 ( LoggedIn loginRecord, Ok weekAndTime ) ->
                     ( Model
@@ -297,7 +307,7 @@ update msg (Model record) =
                     )
 
 
-setClass : Data.WeekAndTime -> Maybe Data.ClassId -> Data.User -> String -> ( LoginModel, Cmd.Cmd Message )
+setClass : Data.WeekAndTime -> Maybe Data.ClassId -> Data.User -> String -> { logInModel : LoginModel, timeTableModel : TimeTableModel, cmd : Cmd.Cmd Message }
 setClass weekAndTime classIdMaybe user accessToken =
     let
         beforeClassSelect =
@@ -308,23 +318,31 @@ setClass weekAndTime classIdMaybe user accessToken =
     in
     case beforeClassSelect of
         Data.ClassNoSending before ->
-            ( LoggedIn
-                { user =
-                    user
-                        |> Data.userMapTimeTableClass weekAndTime
-                            (always (Data.ClassSending { before = before, after = classIdMaybe }))
-                , accessToken = accessToken
-                }
-            , Cmd.none
-            )
+            { logInModel =
+                LoggedIn
+                    { user =
+                        user
+                            |> Data.userMapTimeTableClass weekAndTime
+                                (always (Data.ClassSending { before = before, after = classIdMaybe }))
+                    , accessToken = accessToken
+                    }
+            , timeTableModel = TimeTableView { beforeSelected = weekAndTime.week }
+            , cmd =
+                Graphql.Http.mutationRequest
+                    apiUrl
+                    (Data.setClassQuery accessToken weekAndTime classIdMaybe)
+                    |> Graphql.Http.send ResponseSetClass
+            }
 
         Data.ClassSending _ ->
-            ( LoggedIn
-                { user = user
-                , accessToken = accessToken
-                }
-            , Cmd.none
-            )
+            { logInModel =
+                LoggedIn
+                    { user = user
+                    , accessToken = accessToken
+                    }
+            , timeTableModel = TimeTableView { beforeSelected = weekAndTime.week }
+            , cmd = Cmd.none
+            }
 
 
 subscriptions : Model -> Sub Message
