@@ -9,6 +9,15 @@
   });
 
   self.addEventListener("fetch", e => {
-    // caches.
+    e.waitUntil(
+      (async () => {
+        const response = await caches.match(e.request);
+        if (response !== undefined) {
+          e.respondWith(response);
+          return;
+        }
+        (await caches.open("cacheName")).add(e.request);
+      })()
+    );
   });
 })((self as unknown) as ServiceWorkerGlobalScope);
