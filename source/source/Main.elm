@@ -632,7 +632,13 @@ lineLogInButton =
 userView : Data.User -> S.Html message
 userView user =
     S.div
-        [ A.css [ displayGrid, Css.justifyContent Css.center, Css.height (Css.px 32), gridCellWidthList [ "32px", "1fr" ] ] ]
+        [ A.css
+            [ displayGrid
+            , Css.alignItems Css.center
+            , Css.height (Css.px 32)
+            , gridCellWidthList [ "32px", "1fr" ]
+            ]
+        ]
         [ S.img
             [ A.src (Data.userGetImageUrl user)
             , A.alt (Data.userGetName user ++ "さんのプロフィール画像")
@@ -661,7 +667,7 @@ weekdayTab beforeSelected selected =
 timeTableBody : Maybe Data.Dictionary -> Data.ClassOfDay -> S.Html Api.Enum.Time.Time
 timeTableBody dictionaryMaybe classOfDay =
     S.div
-        [ A.css [ displayGrid, gap 16 ] ]
+        [ A.css [ displayGrid ] ]
         (Api.Enum.Time.list
             |> List.map (\time -> timeTableClass dictionaryMaybe (classOfDay |> Data.classOfDayGetClassSelect time) time)
         )
@@ -670,23 +676,32 @@ timeTableBody dictionaryMaybe classOfDay =
 timeTableClass : Maybe Data.Dictionary -> Data.ClassSelect -> Api.Enum.Time.Time -> S.Html Api.Enum.Time.Time
 timeTableClass dictionaryMaybe classSelect time =
     S.button
-        []
+        [ A.css
+            [ Css.backgroundColor (Css.rgb 223 223 223)
+            , Css.border2 Css.zero Css.none
+            , Css.cursor Css.pointer
+            , Css.padding (Css.px 16)
+            ]
+        , if changeableClass dictionaryMaybe classSelect then
+            Html.Styled.Events.onClick time
+
+          else
+            A.disabled True
+        ]
         [ S.div
-            (A.css
+            [ A.css
                 [ displayGrid
                 , gridCellWidthList [ "32px", "1fr" ]
                 , gridCellHeightList [ "max-content", "max-content" ]
                 , Css.fontSize (Css.rem 1)
                 ]
-                :: (if changeableClass dictionaryMaybe classSelect then
-                        [ Html.Styled.Events.onClick time ]
-
-                    else
-                        [ A.disabled True ]
-                   )
-            )
+            ]
             [ S.div
-                [ A.css [ gridCellX 0 1, gridCellY 0 2 ]
+                [ A.css
+                    [ gridCellX 0 1
+                    , gridCellY 0 2
+                    , Css.fontSize (Css.rem 3)
+                    ]
                 ]
                 [ S.text (time |> Data.timeToInt |> String.fromInt) ]
             , S.div
@@ -699,7 +714,7 @@ timeTableClass dictionaryMaybe classSelect time =
                     ( Just dictionary, Data.ClassNoSending (Just classId) ) ->
                         case dictionary |> Data.getClass classId of
                             Just class ->
-                                [ S.div [] [ S.text class.name ]
+                                [ S.div [ A.css [ Css.fontSize (Css.rem 2) ] ] [ S.text class.name ]
                                 , S.div [] [ S.text class.teacher ]
                                 , S.div [] [ S.text class.room.name ]
                                 ]
