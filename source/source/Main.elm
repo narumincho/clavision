@@ -354,6 +354,7 @@ view (Model record) =
                             record.loginModel
                             beforeSelected
                             record.timeTableSelectedWeekday
+                        , menuView record.menu
                         ]
 
                     TimeTable (TimeTableEdit weekAndTime) ->
@@ -636,71 +637,76 @@ timeTableBody dictionaryMaybe classOfDay =
 
 timeTableClass : Maybe Data.Dictionary -> Data.ClassSelect -> Api.Enum.Time.Time -> S.Html Api.Enum.Time.Time
 timeTableClass dictionaryMaybe classSelect time =
-    (if changeableClass dictionaryMaybe classSelect then
-        S.button
+    S.button
+        []
+        [ S.div
+            ([ A.css
+                [ displayGrid
+                , gridCellWidthList [ "32px", "1fr" ]
+                , gridCellHeightList [ "max-content", "max-content" ]
+                , Css.fontSize (Css.rem 1)
+                ]
+             ]
+                ++ (if changeableClass dictionaryMaybe classSelect then
+                        [ Html.Styled.Events.onClick time ]
 
-     else
-        S.div
-    )
-        ([ A.css
-            [ displayGrid
-            , gridCellWidthList [ "32px", "1fr" ]
-            , gridCellHeightList [ "max-content", "max-content" ]
-            , Css.fontSize (Css.rem 1)
-            ]
-         ]
-            ++ (if changeableClass dictionaryMaybe classSelect then
-                    [ Html.Styled.Events.onClick time ]
+                    else
+                        [ A.disabled True ]
+                   )
+            )
+            [ S.div
+                [ A.css [ gridCellX 0 1, gridCellY 0 2 ]
+                ]
+                [ S.text (time |> Data.timeToInt |> String.fromInt) ]
+            , S.div
+                [ A.css [ gridCellX 1 1, gridCellY 0 1 ] ]
+                [ S.text (time |> Data.timeToClockTimeRange |> Data.clockTimeRangeToString) ]
+            , S.div
+                [ A.css [ gridCellX 1 1, gridCellY 1 1 ]
+                ]
+                (case ( dictionaryMaybe, classSelect ) of
+                    ( Just dictionary, Data.ClassNoSending (Just classId) ) ->
+                        case dictionary |> Data.getClass classId of
+                            Just class ->
+                                [ S.div [] [ S.text class.name ]
+                                , S.div [] [ S.text class.teacher ]
+                                , S.div [] [ S.text class.room.name ]
+                                ]
 
-                else
-                    []
-               )
-        )
-        [ S.div [] [ S.text (time |> Data.timeToInt |> String.fromInt) ]
-        , S.div [] [ S.text (time |> Data.timeToClockTimeRange |> Data.clockTimeRangeToString) ]
-        , S.div []
-            (case ( dictionaryMaybe, classSelect ) of
-                ( Just dictionary, Data.ClassNoSending (Just classId) ) ->
-                    case dictionary |> Data.getClass classId of
-                        Just class ->
-                            [ S.div [] [ S.text class.name ]
-                            , S.div [] [ S.text class.teacher ]
-                            , S.div [] [ S.text class.room.name ]
-                            ]
+                            Nothing ->
+                                [ S.div [] [ S.text "存在しない授業を登録している" ] ]
 
-                        Nothing ->
-                            [ S.div [] [ S.text "存在しない授業を登録している" ] ]
-
-                ( Just dictionary, Data.ClassSending { before, after } ) ->
-                    [ S.text
-                        (getClassName before dictionary
-                            ++ "→"
-                            ++ getClassName after dictionary
-                            ++ "に変更中…"
-                        )
-                    ]
-
-                ( Nothing, Data.ClassNoSending (Just classId) ) ->
-                    [ S.div []
+                    ( Just dictionary, Data.ClassSending { before, after } ) ->
                         [ S.text
-                            ("id=" ++ Data.classIdToString classId)
-                        ]
-                    ]
-
-                ( Nothing, Data.ClassSending { after, before } ) ->
-                    [ S.div []
-                        [ S.text
-                            ("id="
-                                ++ getClassNameWithoutDictionary before
+                            (getClassName before dictionary
                                 ++ "→"
-                                ++ getClassNameWithoutDictionary after
+                                ++ getClassName after dictionary
+                                ++ "に変更中…"
                             )
                         ]
-                    ]
 
-                ( _, Data.ClassNoSending Nothing ) ->
-                    [ S.div [] [ S.text "なし" ] ]
-            )
+                    ( Nothing, Data.ClassNoSending (Just classId) ) ->
+                        [ S.div []
+                            [ S.text
+                                ("id=" ++ Data.classIdToString classId)
+                            ]
+                        ]
+
+                    ( Nothing, Data.ClassSending { after, before } ) ->
+                        [ S.div []
+                            [ S.text
+                                ("id="
+                                    ++ getClassNameWithoutDictionary before
+                                    ++ "→"
+                                    ++ getClassNameWithoutDictionary after
+                                )
+                            ]
+                        ]
+
+                    ( _, Data.ClassNoSending Nothing ) ->
+                        [ S.div [] [ S.text "なし" ] ]
+                )
+            ]
         ]
 
 
