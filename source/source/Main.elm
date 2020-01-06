@@ -677,7 +677,7 @@ timeTableClass : Maybe Data.Dictionary -> Data.ClassSelect -> Api.Enum.Time.Time
 timeTableClass dictionaryMaybe classSelect time =
     S.button
         [ A.css
-            [ Css.backgroundColor (Css.rgb 223 223 223)
+            [ Css.backgroundColor gray
             , Css.border2 Css.zero Css.none
             , Css.cursor Css.pointer
             , Css.padding (Css.px 16)
@@ -803,17 +803,41 @@ timeTableEdit dictionaryMaybe logInModel weekAndTime =
 timeTableEditList : List Data.ClassData -> S.Html (Maybe Data.ClassId)
 timeTableEditList classDataList =
     S.div
-        []
+        [ A.css [ displayGrid ] ]
         ((classDataList |> List.sortBy .name |> List.map (timeTableEditListItem >> S.map Just))
-            ++ [ S.button [ Html.Styled.Events.onClick Nothing ] [ S.text "なし" ] ]
+            ++ [ S.button
+                    [ A.css [ timeTableEditItemStyle ]
+                    , Html.Styled.Events.onClick Nothing
+                    ]
+                    [ S.text "なし" ]
+               ]
         )
 
 
 timeTableEditListItem : Data.ClassData -> S.Html Data.ClassId
 timeTableEditListItem classData =
     S.button
-        [ Html.Styled.Events.onClick classData.id ]
-        [ S.text classData.name ]
+        [ A.css [ timeTableEditItemStyle ]
+        , Html.Styled.Events.onClick classData.id
+        ]
+        [ S.div [ A.css [ Css.fontSize (Css.rem 1.5) ] ] [ S.text classData.name ]
+        , S.div [] [ S.text classData.teacher ]
+        , S.div [] [ S.text classData.room.name ]
+        ]
+
+
+timeTableEditItemStyle : Css.Style
+timeTableEditItemStyle =
+    Css.batch
+        [ Css.backgroundColor gray
+        , Css.border2 Css.zero Css.none
+        , Css.padding (Css.px 8)
+        ]
+
+
+gray : Css.Color
+gray =
+    Css.rgb 223 223 223
 
 
 menuView : Menu -> S.Html Message
