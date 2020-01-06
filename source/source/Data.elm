@@ -6,7 +6,7 @@ module Data exposing
     , ClassOfWeek
     , ClassSelect(..)
     , Dictionary
-    , Floor
+    , FloorMap
     , RoomData
     , RoomId
     , User
@@ -417,13 +417,13 @@ type alias Area =
     }
 
 
-type alias Floor =
+type alias FloorMap =
     { areaList : List Area
     , size : { width : Int, height : Int }
     }
 
 
-building1_1 : Floor
+building1_1 : FloorMap
 building1_1 =
     { areaList =
         [ { points = [ ( 11, 16 ), ( 11, 664 ), ( 32, 664 ), ( 32, 840 ), ( 11, 840 ), ( 11, 998 ), ( 157, 998 ), ( 157, 971 ), ( 255, 971 ), ( 255, 998 ), ( 655, 998 ), ( 655, 745 ), ( 638, 745 ), ( 638, 719 ), ( 655, 719 ), ( 655, 16 ), ( 11, 16 ) ]

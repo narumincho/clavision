@@ -389,7 +389,7 @@ view (Model record) =
         (header
             :: (case record.menu of
                     FloorMap { beforeSelected } ->
-                        [ floorMap beforeSelected record.floorMapSelectedBuildingNumber
+                        [ floorMapView beforeSelected record.floorMapSelectedBuildingNumber
                         , menuView record.menu
                         ]
 
@@ -428,8 +428,8 @@ header =
         [ S.text "クラビジョン" ]
 
 
-floorMap : BuildingNumber -> BuildingNumber -> S.Html Message
-floorMap beforeSelected buildingNumber =
+floorMapView : BuildingNumber -> BuildingNumber -> S.Html Message
+floorMapView beforeSelected buildingNumber =
     S.div
         [ A.css
             [ displayGrid
@@ -452,12 +452,19 @@ floorList buildingNumber =
         ]
         ((case buildingNumber of
             Building1 ->
-                [ Data.building1_1 ]
+                [ ( 1, Data.building1_1 ) ]
 
             _ ->
                 []
          )
-            |> List.map floorToSvg
+            |> List.map
+                (\( floor, floorMap ) ->
+                    S.div
+                        []
+                        [ S.text (String.fromInt floor ++ "階")
+                        , floorMapToSvg floorMap
+                        ]
+                )
         )
 
 
@@ -946,8 +953,8 @@ menuItem messageMaybe text =
                 [ S.text text ]
 
 
-floorToSvg : Data.Floor -> Svg.Styled.Svg message
-floorToSvg floor =
+floorMapToSvg : Data.FloorMap -> Svg.Styled.Svg message
+floorMapToSvg floor =
     Svg.Styled.svg
         [ Svg.Styled.Attributes.viewBox
             ("0 0 "
@@ -955,6 +962,11 @@ floorToSvg floor =
                 ++ " "
                 ++ String.fromInt floor.size.height
             )
+        , Svg.Styled.Attributes.css
+            [ objectFixContain
+            , Css.width (Css.pct 100)
+            , Css.height (Css.px 400)
+            ]
         ]
         (floor.areaList |> List.map areaToSvg)
 
@@ -1018,3 +1030,8 @@ gridCell { x, y, width, height } =
 userSelectNone : Css.Style
 userSelectNone =
     Css.property "user-select" "none"
+
+
+objectFixContain : Css.Style
+objectFixContain =
+    Css.property "object-fit" "contain"
