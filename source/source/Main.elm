@@ -423,6 +423,8 @@ header =
             , Css.justifyContent Css.center
             , Css.alignItems Css.center
             , Css.fontSize (Css.rem 1.5)
+            , boxShadow
+            , Css.zIndex (Css.int 2)
             ]
         ]
         [ S.text "クラビジョン" ]
@@ -435,6 +437,7 @@ floorMapView beforeSelected buildingNumber =
             [ displayGrid
             , gridCellHeightList [ "48px", "1fr" ]
             , gridCellWidthList [ "1fr" ]
+            , Css.overflow Css.auto
             ]
         ]
         [ buildingNumberTab beforeSelected buildingNumber
@@ -446,7 +449,7 @@ floorList : BuildingNumber -> S.Html Message
 floorList buildingNumber =
     S.div
         [ A.css
-            [ Css.overflowX Css.auto
+            [ Css.overflow Css.auto
             , gridCell { x = 0, y = 1, width = 1, height = 1 }
             ]
         ]
@@ -488,6 +491,8 @@ tabView beforeSelected selected messageFunction textFunction all =
         [ A.css
             [ displayGrid
             , gridCellWidthList (List.repeat count "1fr")
+            , boxShadow
+            , Css.zIndex (Css.int 2)
             ]
         ]
         ((all |> List.indexedMap (tabItem selected messageFunction textFunction))
@@ -591,29 +596,22 @@ tabItem selected messageFunction textFunction index element =
 
 timeTableView : Maybe Data.Dictionary -> LoginModel -> Api.Enum.Week.Week -> Api.Enum.Week.Week -> S.Html Message
 timeTableView dictionaryMaybe logInModel beforeSelected selected =
-    case logInModel of
-        Guest ->
-            S.div
-                []
+    S.div
+        [ A.css [ displayGrid, gridCellHeightList [ "32px", "48px", "1fr" ], Css.overflow Css.auto ]
+        ]
+        (case logInModel of
+            Guest ->
                 [ S.text "時間割表を使うにはLINEでログインが必要です"
                 , lineLogInButton
                 ]
 
-        WaitLogInUrl ->
-            S.div
-                []
-                [ S.text "LINEへのURLを発行中"
-                ]
+            WaitLogInUrl ->
+                [ S.text "LINEへのURLを発行中" ]
 
-        WaitUserData _ ->
-            S.div
-                []
+            WaitUserData _ ->
                 [ S.text "ユーザーの情報を取得中…" ]
 
-        LoggedIn { user } ->
-            S.div
-                [ A.css [ displayGrid, gridCellHeightList [ "32px", "48px", "1fr" ] ]
-                ]
+            LoggedIn { user } ->
                 [ userView user
                 , weekdayTab beforeSelected selected
                 , timeTableBody dictionaryMaybe
@@ -622,6 +620,7 @@ timeTableView dictionaryMaybe logInModel beforeSelected selected =
                     )
                     |> S.map (\e -> ToEditClass { week = selected, time = e })
                 ]
+        )
 
 
 lineLogInButton : S.Html Message
@@ -717,7 +716,7 @@ timeTableClass : Maybe Data.Dictionary -> Data.ClassSelect -> Api.Enum.Time.Time
 timeTableClass dictionaryMaybe classSelect time =
     S.button
         [ A.css
-            [ Css.backgroundColor gray
+            [ Css.backgroundColor (Css.rgb 255 255 255)
             , Css.border2 Css.zero Css.none
             , Css.cursor Css.pointer
             , Css.padding (Css.px 16)
@@ -824,7 +823,9 @@ changeableClass dictionaryMaybe classSelect =
 timeTableEdit : Maybe Data.Dictionary -> LoginModel -> Data.WeekAndTime -> S.Html Message
 timeTableEdit dictionaryMaybe logInModel weekAndTime =
     S.div
-        []
+        [ A.css
+            [ Css.overflow Css.auto ]
+        ]
         (case ( logInModel, dictionaryMaybe ) of
             ( LoggedIn { user }, Just dictionary ) ->
                 [ S.div
@@ -855,20 +856,28 @@ timeTableEditList : List Data.ClassData -> S.Html (Maybe Data.ClassId)
 timeTableEditList classDataList =
     S.div
         [ A.css [ displayGrid ] ]
-        ((classDataList |> List.sortBy .name |> List.map (timeTableEditListItem >> S.map Just))
-            ++ [ S.button
-                    [ A.css [ timeTableEditItemStyle ]
-                    , Html.Styled.Events.onClick Nothing
-                    ]
-                    [ S.text "なし" ]
-               ]
+        (S.button
+            [ A.css
+                [ timeTableEditItemStyle
+                , Css.cursor Css.pointer
+                , Css.fontSize (Css.rem 2)
+                , Css.textAlign Css.left
+                ]
+            , Html.Styled.Events.onClick Nothing
+            ]
+            [ S.text "なし" ]
+            :: (classDataList |> List.sortBy .name |> List.map (timeTableEditListItem >> S.map Just))
         )
 
 
 timeTableEditListItem : Data.ClassData -> S.Html Data.ClassId
 timeTableEditListItem classData =
     S.button
-        [ A.css [ timeTableEditItemStyle ]
+        [ A.css
+            [ timeTableEditItemStyle
+            , Css.cursor Css.pointer
+            , Css.textAlign Css.left
+            ]
         , Html.Styled.Events.onClick classData.id
         ]
         [ S.div [ A.css [ Css.fontSize (Css.rem 1.5) ] ] [ S.text classData.name ]
@@ -1035,3 +1044,8 @@ userSelectNone =
 objectFixContain : Css.Style
 objectFixContain =
     Css.property "object-fit" "contain"
+
+
+boxShadow : Css.Style
+boxShadow =
+    Css.boxShadow4 Css.zero (Css.px 2) (Css.px 4) (Css.rgba 0 0 0 0.18)
