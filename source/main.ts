@@ -10,13 +10,17 @@ document.body.appendChild(elmAppElement);
 
 document.body.append(elmAppElement);
 
-const flag = () => {
+const accessTokenKey = "accessToken";
+
+const flag = (): string | null => {
   const result = /accessToken=([^&]+)/.exec(location.hash);
-  if (result === null) {
-    return null;
+  if (result !== null) {
+    location.hash = "";
+    const accessToken = result[1];
+    localStorage.setItem(accessTokenKey, accessToken);
+    return accessToken;
   }
-  location.hash = "";
-  return result[1];
+  return localStorage.getItem(accessTokenKey);
 };
 
 const app = Elm.Main.init({

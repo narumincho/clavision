@@ -658,14 +658,13 @@ timeTableClass dictionaryMaybe classSelect time =
     S.button
         []
         [ S.div
-            ([ A.css
+            (A.css
                 [ displayGrid
                 , gridCellWidthList [ "32px", "1fr" ]
                 , gridCellHeightList [ "max-content", "max-content" ]
                 , Css.fontSize (Css.rem 1)
                 ]
-             ]
-                ++ (if changeableClass dictionaryMaybe classSelect then
+                :: (if changeableClass dictionaryMaybe classSelect then
                         [ Html.Styled.Events.onClick time ]
 
                     else
