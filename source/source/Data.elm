@@ -396,7 +396,7 @@ clockTimeIncrementMinutes rest =
         identity
 
     else
-        Clock.incrementMinutes >> Tuple.first
+        Clock.incrementMinutes >> Tuple.first >> clockTimeIncrementMinutes (rest - 1)
 
 
 clockTimeRangeToString : ClockTimeRange -> String

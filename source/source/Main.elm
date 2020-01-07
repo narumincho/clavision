@@ -607,7 +607,9 @@ timeTableView dictionaryMaybe logInModel beforeSelected selected =
                 ]
 
             WaitLogInUrl ->
-                [ S.text "LINEへのURLを発行中" ]
+                [ S.text "LINEへのURLを発行中"
+                , loadingIcon
+                ]
 
             WaitUserData _ ->
                 [ S.text "ユーザーの情報を取得中…" ]
@@ -846,7 +848,9 @@ timeTableEdit dictionaryMaybe logInModel weekAndTime =
                 ]
 
             ( _, Nothing ) ->
-                [ S.text "授業情報を読み込み中…" ]
+                [ S.text "授業情報を読み込み中…"
+                , loadingIcon
+                ]
 
             _ ->
                 [ S.text "ログインしていないと、時間割表を編集することができません" ]
@@ -1050,3 +1054,32 @@ objectFixContain =
 boxShadow : Css.Style
 boxShadow =
     Css.boxShadow4 Css.zero (Css.px 2) (Css.px 4) (Css.rgba 0 0 0 0.18)
+
+
+loadingIcon : S.Html msg
+loadingIcon =
+    S.div
+        [ A.css
+            [ Css.borderRadius (Css.pct 50)
+            , Css.width (Css.px 64)
+            , Css.height (Css.px 64)
+            , Css.border3 (Css.px 3) Css.solid (Css.rgb 0 0 0)
+            , Css.borderRightColor Css.transparent
+            , Css.animationName
+                (Css.Animations.keyframes
+                    [ ( 100, [ Css.Animations.transform [ Css.rotate (Css.turn 1) ] ] ) ]
+                )
+            , Css.animationIterationCount infinite
+            , Css.animationDuration (Css.sec 0.6)
+            , Css.property "animation-timing-function" "linear"
+            ]
+        ]
+        []
+
+
+infinite =
+    let
+        a =
+            Css.int 0
+    in
+    { a | value = "infinite" }
