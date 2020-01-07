@@ -11,6 +11,7 @@ export namespace Elm {
 
 type Ports = {
   jumpPage: SubForElmCmd<string>;
+  deleteAccessToken: SubForElmCmd<null>;
 };
 
 type SubForElmCmd<T> = {

@@ -30,6 +30,9 @@ import Url
 port jumpPage : String -> Cmd msg
 
 
+port deleteAccessToken : () -> Cmd msg
+
+
 apiUrl : String
 apiUrl =
     "https://us-central1-clavision.cloudfunctions.net/api"
@@ -156,6 +159,7 @@ type Message
     | SetClass { weekAndTime : Data.WeekAndTime, classId : Maybe Data.ClassId }
     | ResponseSetClass { weekAndTime : Data.WeekAndTime, result : Result (Graphql.Http.Error ()) () }
     | BackToTimeTableView
+    | Logout
 
 
 update : Message -> Model -> ( Model, Cmd Message )
@@ -305,6 +309,12 @@ update msg (Model record) =
                             (TimeTableView { beforeSelected = record.timeTableSelectedWeekday })
                 }
             , Cmd.none
+            )
+
+        Logout ->
+            ( Model
+                { record | loginModel = Guest }
+            , deleteAccessToken ()
             )
 
 
@@ -671,14 +681,14 @@ lineLogInButton =
         ]
 
 
-userView : Data.User -> S.Html message
+userView : Data.User -> S.Html Message
 userView user =
     S.div
         [ A.css
             [ displayGrid
             , Css.alignItems Css.center
             , Css.height (Css.px 32)
-            , gridCellWidthList [ "32px", "1fr" ]
+            , gridCellWidthList [ "32px", "1fr", "max-content" ]
             ]
         ]
         [ S.img
@@ -693,6 +703,7 @@ userView user =
             ]
             []
         , S.text (Data.userGetName user)
+        , S.button [ Html.Styled.Events.onClick Logout ] [ S.text "ログアウト" ]
         ]
 
 

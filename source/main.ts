@@ -32,6 +32,10 @@ app.ports.jumpPage.subscribe(url => {
   location.href = url;
 });
 
+app.ports.deleteAccessToken.subscribe(() => {
+  localStorage.removeItem(accessTokenKey);
+});
+
 navigator.serviceWorker.register("./serviceWorker/serviceWorker.ts", {
   scope: "/"
 });
